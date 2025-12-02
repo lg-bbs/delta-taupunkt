@@ -15,3 +15,4 @@ while not result.is_valid():  # read until valid values
 
 print("Temperature: %-3.1f C" % result.temperature)
 print("Humidity: %-3.1f %%" % result.humidity)
+
