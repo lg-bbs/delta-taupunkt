@@ -17,8 +17,8 @@ class DHT:
 
         if result.is_valid():
             return Measurement(
-                temperatur = result.temperature,
-                luftfeuchtigkeit = result.humidity
+                temperature = result.temperature,
+                humidity = result.humidity
             )
 
         return None

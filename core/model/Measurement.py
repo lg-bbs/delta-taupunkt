@@ -1,4 +1,4 @@
 class Measurement:
-    def __init__(self, temperatur: float, luftfeuchtigkeit: float):
-        self.temperatur = temperatur
-        self.luftfeuchtigkeit = luftfeuchtigkeit
+    def __init__(self, temperature: float, humidity: float):
+        self.temperature = temperature
+        self.humidity = humidity
