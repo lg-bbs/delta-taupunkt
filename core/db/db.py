@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from typing import List, Dict, Any
+from model.Measurement import Measurement
 
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "measure.db")
@@ -11,56 +12,39 @@ class MeasureDB:
         self.db_path = db_path
         self._ensure_db()
 
-    # -----------------------------------------------------------
-    # DB INITIALISIERUNG
-    # -----------------------------------------------------------
     def _ensure_db(self):
         """Erstellt die Datenbank inkl. Tabelle, falls sie nicht existiert."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS measurements (
+            CREATE TABLE IF NOT EXISTS measurement (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 time INTEGER NOT NULL,
                 temp_inside REAL,
                 hum_inside REAL,
                 temp_outside REAL,
-                hum_outside REAL,
-                motor_on INTEGER NOT NULL
+                hum_outside REAL
             );
         """)
 
         conn.commit()
         conn.close()
 
-    # -----------------------------------------------------------
-    # SCHREIBEN
-    # -----------------------------------------------------------
-    def insert_measurement(
-        self,
-        time: int,
-        temp_inside: float,
-        hum_inside: float,
-        temp_outside: float,
-        hum_outside: float,
-        motor_on: bool
-    ):
-        """Fügt einen vollständigen Datensatz ein."""
+    def insert_measurement(self, m: Measurement):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO measurements
-            (time, temp_inside, hum_inside, temp_outside, hum_outside, motor_on)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO measurement
+            (time, temp_inside, hum_inside, temp_outside, hum_outside)
+            VALUES (?, ?, ?, ?, ?)
         """, (
-            time,
-            temp_inside,
-            hum_inside,
-            temp_outside,
-            hum_outside,
-            int(motor_on)
+            m.time,
+            m.inside.temp,
+            m.inside.hum,
+            m.outside.temp,
+            m.outside.hum
         ))
 
         conn.commit()
@@ -75,7 +59,7 @@ class MeasureDB:
         cursor = conn.cursor()
 
         rows = cursor.execute(
-            "SELECT * FROM measurements ORDER BY time ASC"
+            "SELECT * FROM measurement ORDER BY time ASC"
         ).fetchall()
 
         conn.close()
@@ -87,7 +71,7 @@ class MeasureDB:
         cursor = conn.cursor()
 
         rows = cursor.execute(
-            "SELECT * FROM measurements ORDER BY time DESC LIMIT ?",
+            "SELECT * FROM measurement ORDER BY time DESC LIMIT ?",
             (limit,)
         ).fetchall()
 

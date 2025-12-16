@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import dht11
 
-from model.Measurement import Measurement
+from model.SingleMeasurement import SingleMeasurement
 
 class DHT:
     def __init__(self, pin: int):
@@ -12,13 +12,13 @@ class DHT:
 
         self.sensor = dht11.DHT11(pin=self.pin)
 
-    def measure(self) -> Measurement | None:
+    def measure(self) -> SingleMeasurement | None:
         result = self.sensor.read()
 
         if result.is_valid():
-            return Measurement(
-                temperature = result.temperature,
-                humidity = result.humidity
+            return SingleMeasurement(
+                temp = result.temperature,
+                hum = result.humidity
             )
 
         return None
