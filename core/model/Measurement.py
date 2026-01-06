@@ -7,4 +7,4 @@ class Measurement:
         self.outside = outside
         
     def txt(self) -> str:
-        return f"{time}: Innen ({indide.temp}°C, {inside.hum})"
+        return f"{self.time}: Innen ({self.inside.temp}°C, {self.inside.hum})"
