@@ -13,7 +13,7 @@ def run_lcd_demo():
         # Initialisierung I2C Bus
         i2c = busio.I2C(board.SCL, board.SDA)
         # Festlegen des LCDs in die Variable LCD
-        lcd = character_lcd.Character_LCD_I2C(i2c, lcd_columns, lcd_rows)
+        lcd = character_lcd.Character_LCD_I2C(i2c, lcd_columns, lcd_rows, 0x21)
         # Hintergrundbeleuchtung einschalten
         lcd.backlight = True
         # Zwei Worte mit Zeilenumbruch werden ausgegeben
