@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from typing import List, Dict, Any
-from model.Measurement import Measurement
+from core.model.Measurement import Measurement
 
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "measure.db")

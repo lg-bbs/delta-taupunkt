@@ -1,7 +1,7 @@
 import time
-from DHT import DHT
-from model.SingleMeasurement import SingleMeasurement
-from model.Measurement import Measurement
+from .DHT import DHT
+from core.model.SingleMeasurement import SingleMeasurement
+from core.model.Measurement import Measurement
 
 def measure_all() -> Measurement | None:
     insideDHT = DHT(pin=4)

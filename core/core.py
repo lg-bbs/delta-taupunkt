@@ -7,7 +7,7 @@ def core(interval: int = 2):
         m = measure_all()
 
         if m:
-            print(m)
+            print(m.txt())
         else:
             print("Messung ungültig")
 

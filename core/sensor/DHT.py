@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import dht11
 
-from model.SingleMeasurement import SingleMeasurement
+from core.model.SingleMeasurement import SingleMeasurement
 
 class DHT:
     def __init__(self, pin: int):
