@@ -15,10 +15,10 @@ class DHT:
     def measure(self) -> SingleMeasurement | None:
         result = self.sensor.read()
 
-        if result.is_valid():
-            return SingleMeasurement(
-                temp = result.temperature,
-                hum = result.humidity
-            )
+        #if result.is_valid():
+        return SingleMeasurement(
+            temp = result.temperature,
+            hum = result.humidity
+        )
 
         return None
