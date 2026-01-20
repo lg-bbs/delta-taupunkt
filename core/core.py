@@ -12,7 +12,7 @@ def core(interval: int = 2):
 
         if m:
             print(m.txt())
-            lcd.displayData(m)
+            lcd.showData(m)
         else:
             print("Messung ungültig")
 
