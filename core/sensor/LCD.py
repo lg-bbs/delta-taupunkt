@@ -3,7 +3,7 @@
 import time
 import board
 import busio
-import core.model.Measurement
+from core.model.Measurement import Measurement
 import adafruit_character_lcd.character_lcd_i2c as character_lcd
 
 class LCD:
