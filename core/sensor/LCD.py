@@ -7,7 +7,6 @@ from core.model.Measurement import Measurement
 import adafruit_character_lcd.character_lcd_i2c as character_lcd
 
 class LCD:
-
     def __init__(self):
         lcd_columns = 16
         lcd_rows = 2
