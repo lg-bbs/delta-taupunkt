@@ -42,11 +42,11 @@ def run_lcd_demo():
         scroll_msg = "<-- Scroll -->"
         lcd.message = scroll_msg
         for i in range(len(scroll_msg)):
-        time.sleep(0.5)
-        lcd.move_right()
+            time.sleep(0.5)
+            lcd.move_right()
         for i in range(len(scroll_msg)):
-        time.sleep(0.5)
-        lcd.move_left()
+            time.sleep(0.5)
+            lcd.move_left()
         # Hintergrundbeleuchtung an und ausschalten.
         lcd.clear()
         lcd.message = "Flash backlight\nin 5 seconds..."
@@ -67,7 +67,7 @@ def run_lcd_demo():
         lcd.clear()
         lcd.backlight = False
 
-        except KeyboardInterrupt:
+    except KeyboardInterrupt:
         # LCD ausschalten.
         lcd.clear()
         lcd.backlight = False
