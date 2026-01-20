@@ -7,8 +7,8 @@ class DHTHelper:
     def __init__(self):
             self.insideDHT = DHT(pin=4)
     
-    def measure_all() -> Measurement | None:
+    def measure_all(self) -> Measurement | None:
         return Measurement(
             time.time_ns() // 1_000_000,
-            inside = insideDHT.measure()
+            inside = self.insideDHT.measure()
         )
