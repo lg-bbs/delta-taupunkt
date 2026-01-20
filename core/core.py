@@ -1,10 +1,12 @@
 # core.py
 import time
-from .sensor.DHTHelper import measure_all
+from .sensor.DHTHelper import DHTHelper
 
 def core(interval: int = 2):
+    dhtHelper = DHTHelper()
+    
     while True:
-        m = measure_all()
+        m = dhtHelper.measure_all()
 
         if m:
             print(m.txt())
