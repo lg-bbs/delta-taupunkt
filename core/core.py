@@ -1,7 +1,7 @@
 # core.py
 import time
 from .sensor.DHTHelper import DHTHelper
-import .sensor.LCD
+import core.sensor.LCD
 
 def core(interval: int = 2):
     dhtHelper = DHTHelper()
