@@ -7,7 +7,7 @@ class Measurement:
         self.outside = outside
         
     def txt(self) -> str:
-        if self.isValid():
+        if not self.isValid():
             return f"{self.time}: Keine Daten"
         return f"{self.time}: Innen ({self.inside.txt()})"
         
