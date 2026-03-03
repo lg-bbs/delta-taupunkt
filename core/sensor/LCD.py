@@ -16,7 +16,7 @@ class LCD:
     def showData(self, m: Measurement):
         try:
             self.lcd.backlight = True
-            self.lcd.message = m.txt()
+            self.lcd.message = m.inside.txt()
             
             #lcd.clear()
             #lcd.cursor = True
