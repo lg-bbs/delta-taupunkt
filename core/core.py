@@ -1,7 +1,7 @@
 # core.py
 import time
 from .sensor.DHTHelper import DHTHelper
-from .db.MeasureDB import MeasureDB
+from .db.db import MeasureDB
 from .sensor.LCD import LCD
 
 def core(interval: int = 2):
