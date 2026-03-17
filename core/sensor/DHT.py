@@ -9,6 +9,7 @@ class DHT:
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
+        GPIO.setup(led_pin, GPIO.IN)
 
         self.sensor = dht11.DHT11(pin=self.pin)
 
