@@ -9,13 +9,18 @@ def core(interval: int = 2):
     lcd = LCD()
     db = MeasureDB()
     
+    print("start")
     while True:
+        print("loop")
         m = dhtHelper.measure_all()
+        print("after measure")
 
         if m:
             print(m.txt())
             lcd.showData(m)
+            print("after show")
             db.insert_measurement(m)
+            print("after save")
         else:
             print("Messung ungültig")
 
