@@ -13,10 +13,16 @@ class DHT:
         self.sensor = dht11.DHT11(pin=self.pin)
 
     def measure(self) -> SingleMeasurement | None:
+        print(f"first measure: {pin}")
         result = self.sensor.read()
-
+        
+        i = 0
         while not result.is_valid():
+            if (i == 1000):
+                return None
+            print(f"INVALID measure: {pin}")
             result = self.sensor.read()
+            i++
             
             
         return SingleMeasurement(
