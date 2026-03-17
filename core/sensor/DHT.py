@@ -22,7 +22,7 @@ class DHT:
                 return None
             print(f"INVALID measure: {pin}")
             result = self.sensor.read()
-            i++
+            i = i + 1
             
             
         return SingleMeasurement(
