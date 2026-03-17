@@ -19,7 +19,7 @@ class DHT:
         
         i = 0
         while not result.is_valid():
-            if (i == 100):
+            if (i == 1000):
                 print(f"invalid measure: {self.pin}, Returning")
                 return None
             print(f"INVALID measure: {self.pin}, Retry {i}")

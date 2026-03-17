@@ -43,8 +43,8 @@ class MeasureDB:
             m.time,
             m.inside.temp,
             m.inside.hum,
-            0,#m.outside.temp,
-            0,#m.outside.hum
+            m.outside.temp,
+            m.outside.hum
         ))
 
         conn.commit()
