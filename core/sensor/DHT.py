@@ -18,13 +18,14 @@ class DHT:
         
         i = 0
         while not result.is_valid():
-            if (i == 1000):
+            if (i == 100):
+                print(f"invalid measure: {self.pin}, Returning")
                 return None
-            print(f"INVALID measure: {self.pin}")
+            print(f"INVALID measure: {self.pin}, Retry {i}")
             result = self.sensor.read()
             i = i + 1
             
-            
+        print(f"success measure: {self.pin}")
         return SingleMeasurement(
             temp = result.temperature,
             hum = result.humidity
