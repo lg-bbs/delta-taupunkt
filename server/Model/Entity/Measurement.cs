@@ -6,4 +6,5 @@ public class Measurement
     public DateTime Timestamp { get; set; }
     public SingleMeasurement Inside { get; set; }
     public SingleMeasurement Outside { get; set; }
+    public bool IsFanRunning { get; set; }
 }

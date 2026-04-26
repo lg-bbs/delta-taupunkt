@@ -1,0 +1,186 @@
+﻿@page "/stats"
+@using MudBlazor
+@using TauLuftAspire.Model.Entity
+@using TauLuftAspire.Web.Components.Default
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-6">Historische Daten & Analyse</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4 mb-4">
+                <MudDateRangePicker Label="Zeitraum auswählen" @bind-DateRange="_dateRange"
+                                    AutoClose="true" PickerVariant="PickerVariant.Dialog"
+                                    Margin="Margin.Dense" />
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyFilter" Class="ml-auto">
+                Daten filtern
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Taupunkt Vergleich (°C)</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@_tpSeries"
+                              XAxisLabels="@_xAxisLabels"
+                              Width="100%" Height="300px"
+                              ChartOptions="@_tpOptions" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Temp (°C) & Feuchte (%)</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@_thSeries"
+                              XAxisLabels="@_xAxisLabels"
+                              Width="100%" Height="300px"
+                              ChartOptions="@_thOptions" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTable Items="@_filteredMeasurements" Dense="true" Hover="true" Elevation="2" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>Zeitpunkt</MudTh>
+                    <MudTh>Innen (T/H/TP)</MudTh>
+                    <MudTh>Außen (T/H/TP)</MudTh>
+                    <MudTh>Delta TP</MudTh>
+                    <MudTh>Lüfter</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Timestamp.ToString("dd.MM. HH:mm")</MudTd>
+                    <MudTd>@context.Inside.Temperature°C | @context.Inside.Humidity% | <b>@context.Inside.DewPoint°C</b></MudTd>
+                    <MudTd>@context.Outside.Temperature°C | @context.Outside.Humidity% | <b>@context.Outside.DewPoint°C</b></MudTd>
+                    <MudTd>@((context.Inside.DewPoint - context.Outside.DewPoint).ToString("N1")) K</MudTd>
+                    <MudTd>
+                        <MudIcon Icon="@(context.IsFanRunning ? Icons.Material.Filled.Air : Icons.Material.Filled.Block)"
+                                 Color="@(context.IsFanRunning ? Color.Success : Color.Error)" />
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<Measurement> _allTestData = new();
+    private List<Measurement> _filteredMeasurements = new();
+    
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-2), DateTime.Now.Date);
+    
+    private List<ChartSeries> _tpSeries = new();
+    private List<ChartSeries> _thSeries = new();
+    private string[] _xAxisLabels = Array.Empty<string>();
+    private ChartOptions _options = new() { InterpolationOption = InterpolationOption.NaturalSpline };
+
+    protected override void OnInitialized()
+    {
+        GenerateLargeBatchTestData();
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredMeasurements = _allTestData
+            .Where(m => m.Timestamp.Date >= _dateRange.Start && m.Timestamp.Date <= _dateRange.End)
+            .OrderBy(m => m.Timestamp)
+            .ToList();
+
+        PrepareCharts();
+    }
+
+    private string[] _tpPalette = { "#FF5252", "#448AFF" }; // Rot für Innen, Blau für Außen
+    private string[] _thPalette = { "#FF5252", "#5294ff", "#802a2a", "#27477a" }; // Orange (Temp In), Lila (Hum In), Hellblau (Temp Out)
+
+    private ChartOptions _tpOptions = new() { InterpolationOption = InterpolationOption.NaturalSpline };
+    private ChartOptions _thOptions = new() { InterpolationOption = InterpolationOption.NaturalSpline };
+
+    private void PrepareCharts()
+    {
+        if (!_filteredMeasurements.Any()) return;
+
+        // 1. LOGIK FÜR DIE X-ACHSE (Label-Ausdünnung)
+        int totalPoints = _filteredMeasurements.Count;
+        // Wir wollen maximal 5-8 Labels gleichzeitig sehen
+        int labelInterval = Math.Max(1, totalPoints / 6);
+
+        _xAxisLabels = new string[totalPoints];
+        for (int i = 0; i < totalPoints; i++)
+        {
+            if (i % labelInterval == 0)
+            {
+                _xAxisLabels[i] = _filteredMeasurements[i].Timestamp.ToString("dd.MM HH:mm");
+            }
+            else
+            {
+                _xAxisLabels[i] = ""; // Leeres Label für die Zwischenpunkte
+            }
+        }
+
+        // 2. FARBEN ZUWEISEN
+        _tpOptions.ChartPalette = _tpPalette;
+        _thOptions.ChartPalette = _thPalette;
+
+        // Taupunkt Chart
+        _tpSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "TP Innen", Data = _filteredMeasurements.Select(m => m.Inside.DewPoint).ToArray() },
+            new ChartSeries { Name = "TP Außen", Data = _filteredMeasurements.Select(m => m.Outside.DewPoint).ToArray() }
+        };
+
+        // Temperatur & Feuchtigkeit Chart
+        _thSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Temp Innen", Data = _filteredMeasurements.Select(m => m.Inside.Temperature).ToArray() },
+            new ChartSeries { Name = "Hum Innen", Data = _filteredMeasurements.Select(m => m.Inside.Humidity).ToArray() },
+            new ChartSeries { Name = "Temp Außen", Data = _filteredMeasurements.Select(m => m.Outside.Temperature).ToArray() },
+            new ChartSeries { Name = "Hum Außen", Data = _filteredMeasurements.Select(m => m.Outside.Humidity).ToArray() }
+        };
+    }
+
+    private void GenerateLargeBatchTestData()
+    {
+        // Generiert Daten für die letzten 7 Tage alle 4 Stunden
+        var list = new List<Measurement>();
+        var start = DateTime.Now.AddDays(-7);
+        
+        for (int i = 0; i < 50; i++)
+        {
+            var time = start.AddHours(i * 4);
+            var tempIn = 20.0 + Math.Sin(i * 0.5); // Leichtes Schwingen
+            var humIn = 55.0 + Math.Cos(i * 0.5) * 5;
+            
+            var tempOut = 10.0 + Math.Sin(i * 0.3) * 8;
+            var humOut = 70.0 + Math.Cos(i * 0.2) * 20;
+
+            list.Add(new Measurement
+            {
+                Id = i,
+                Timestamp = time,
+                Inside = new SingleMeasurement { Temperature = Math.Round(tempIn, 1), Humidity = Math.Round(humIn, 1), DewPoint = Math.Round(tempIn - 8, 1) },
+                Outside = new SingleMeasurement { Temperature = Math.Round(tempOut, 1), Humidity = Math.Round(humOut, 1), DewPoint = Math.Round(tempOut - 5, 1) },
+                IsFanRunning = (tempIn - 8) > (tempOut - 5) // Einfache Logik für Testdaten
+            });
+        }
+        _allTestData = list;
+    }
+}

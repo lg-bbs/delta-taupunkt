@@ -12,9 +12,8 @@ public class LogEntry
     public string? Details { get; set; }
     public bool HaveRead { get; set; }
 
-    public LogEntry(int id, string message, string details, string source, LogSeverity severity, DateTime timestamp, bool read = true)
+    public LogEntry(string message, string details, string source, LogSeverity severity, DateTime timestamp, bool read = true)
     {
-        Id = id;
         Severity = severity;
         Timestamp = timestamp;
         Source = source;

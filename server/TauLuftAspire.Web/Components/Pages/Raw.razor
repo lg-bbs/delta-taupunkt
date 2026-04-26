@@ -1,0 +1,155 @@
+﻿@page "/raw"
+@using MudBlazor
+@using TauLuftAspire.Model.Entity
+@using TauLuftAspire.Web.Components.Default
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-6">Rohdaten</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4 mb-4">
+                <MudDateRangePicker Label="Zeitraum auswählen" @bind-DateRange="_dateRange"
+                                    AutoClose="true" PickerVariant="PickerVariant.Dialog"
+                                    Margin="Margin.Dense" />
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyFilter" Class="ml-auto">
+                Daten filtern
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTable Items="@_filteredMeasurements" Dense="true" Hover="true" Elevation="2" RowsPerPage="10" GroupBy="@_groupDefinition">
+                <ColGroup>
+                    <col />
+                    <col style="width: 10%;" />
+                    <col style="width: 10%;" />
+                    <col style="width: 10%;" />
+                    <col style="width: 10%;" />
+                    <col style="width: 10%;" />
+                    <col style="width: 10%;" />
+                    <col />
+                    <col />
+                </ColGroup>
+                <HeaderContent>
+                    @* <MudTHeadRow>
+                        <MudTh ColSpan="1"></MudTh> <MudTh Class="bg-indoor border-right" Style="text-align: center" ColSpan="3">INNEN</MudTh>
+                        <MudTh Class="bg-outdoor border-right" Style="text-align: center" ColSpan="3">AUSSEN</MudTh>
+                        <MudTh ColSpan="1" Style="text-align: center">DELTA</MudTh>
+                        <MudTh ColSpan="1" Style="text-align: center">STATUS</MudTh>
+                    </MudTHeadRow> *@
+                    @* <MudTHeadRow> *@
+                        <MudTh>Zeitpunkt</MudTh>
+                        <MudTh Class="bg-indoor">Innen °C</MudTh>
+                        <MudTh Class="bg-indoor">Innen %</MudTh>
+                        <MudTh Class="bg-indoor border-right">Innen TP</MudTh>
+                        <MudTh Class="bg-outdoor">Außen °C</MudTh>
+                        <MudTh Class="bg-outdoor">Außen %</MudTh>
+                        <MudTh Class="bg-outdoor">Außen TP</MudTh>
+                        <MudTh>Delta TP</MudTh>
+                        <MudTh>Lüfter-Status</MudTh>
+                    @* </MudTHeadRow> *@
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Timestamp.ToString("HH:mm 'Uhr'")</MudTd>
+                    <MudTd Class="bg-indoor">@context.Inside.Temperature°C</MudTd>
+                    <MudTd Class="bg-indoor">@context.Inside.Humidity%</MudTd>
+                    <MudTd Class="bg-indoor border-right"><b>@context.Inside.DewPoint°C</b></MudTd>
+                    <MudTd Class="bg-outdoor">@context.Outside.Temperature°C</MudTd>
+                    <MudTd Class="bg-outdoor">@context.Outside.Humidity%</MudTd>
+                    <MudTd Class="bg-outdoor"><b>@context.Outside.DewPoint°C</b></MudTd>
+                    <MudTd>@((context.Inside.DewPoint - context.Outside.DewPoint).ToString("N1")) K</MudTd>
+                    <MudTd><MudIcon Icon="@(context.IsFanRunning ? Icons.Material.Filled.Air : Icons.Material.Filled.Block)" Color="@(context.IsFanRunning ? Color.Success : Color.Error)" /></MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+                <GroupHeaderTemplate>
+                    <MudTh Class="mud-theme-dark pa-2" colspan="9" Style="background-color: var(--mud-palette-background-grey);">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-2" />
+                            <MudText Typo="Typo.subtitle2">
+                                @(((DateTime)context.Key).ToString("dd. MMMM yyyy"))
+                            </MudText>
+                        </div>
+                    </MudTh>
+                </GroupHeaderTemplate>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    /* Vertikale Trennlinie nach der Innen-Gruppe */
+    .border-right {
+        border-right: 2px solid var(--mud-palette-divider) !important;
+    }
+
+    /* Leichte Hintergrundfärbung für die Innen-Spalten zur Gruppierung */
+    .bg-indoor {
+        background-color: rgba(255, 152, 0, 0.05); /* Sehr dezentes Orange */
+    }
+
+    /* Leichte Hintergrundfärbung für die Außen-Spalten */
+    .bg-outdoor {
+        background-color: rgba(33, 150, 243, 0.05); /* Sehr dezentes Blau */
+    }
+</style>
+
+@code {
+    private List<Measurement> _allTestData = new();
+    private List<Measurement> _filteredMeasurements = new();
+
+    private TableGroupDefinition<Measurement> _groupDefinition = new()
+    {
+        GroupName = "Datum",
+        Indentation = false,
+        Expandable = false,
+        Selector = (e) => e.Timestamp.Date
+    };
+    
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-2), DateTime.Now.Date);
+
+    protected override void OnInitialized()
+    {
+        GenerateLargeBatchTestData();
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredMeasurements = _allTestData
+            .Where(m => m.Timestamp.Date >= _dateRange.Start && m.Timestamp.Date <= _dateRange.End)
+            .OrderByDescending(m => m.Timestamp)
+            .ToList();
+    }
+
+    private void GenerateLargeBatchTestData()
+    {
+        // Generiert Daten für die letzten 7 Tage alle 4 Stunden
+        var list = new List<Measurement>();
+        var start = DateTime.Now.AddDays(-7);
+        
+        for (int i = 0; i < 50; i++)
+        {
+            var time = start.AddHours(i * 4);
+            var tempIn = 20.0 + Math.Sin(i * 0.5); // Leichtes Schwingen
+            var humIn = 55.0 + Math.Cos(i * 0.5) * 5;
+            
+            var tempOut = 10.0 + Math.Sin(i * 0.3) * 8;
+            var humOut = 70.0 + Math.Cos(i * 0.2) * 20;
+
+            list.Add(new Measurement
+            {
+                Id = i,
+                Timestamp = time,
+                Inside = new SingleMeasurement { Temperature = Math.Round(tempIn, 1), Humidity = Math.Round(humIn, 1), DewPoint = Math.Round(tempIn - 8, 1) },
+                Outside = new SingleMeasurement { Temperature = Math.Round(tempOut, 1), Humidity = Math.Round(humOut, 1), DewPoint = Math.Round(tempOut - 5, 1) },
+                IsFanRunning = (tempIn - 8) > (tempOut - 5) // Einfache Logik für Testdaten
+            });
+        }
+        _allTestData = list;
+    }
+}
