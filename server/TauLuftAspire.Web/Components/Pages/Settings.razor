@@ -1,0 +1,246 @@
+﻿@page "/settings"
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-8 px-6">
+    <MudText Typo="Typo.h4" Class="mb-6 font-weight-bold">Systemkonfiguration</MudText>
+
+    <MudTabs Elevation="4" Rounded="true" Color="Color.Primary" ApplyEffectsToContainer="true" PanelClass="pa-6">
+
+        @* --- TAB 1: REGELUNGSLOGIK --- *@
+        <MudTabPanel Text="Regelung" Icon="@Icons.Material.Filled.Tune">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Schwellenwerte</MudText>
+                    <MudStack Spacing="4">
+                        <MudNumericField @bind-Value="DewPointDelta" Label="Einschalt-Differenz (Δ TP)" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="°C" HelperText="Mindestdifferenz zwischen Innen- und Außentaupunkt" />
+                        <MudNumericField @bind-Value="Hysteresis" Label="Hysterese" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="°C" />
+                        <MudNumericField @bind-Value="MinIndoorTemp" Label="Frostschutz-Limit" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="°C" />
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Betriebszeiten</MudText>
+                    <MudStack Spacing="4">
+                        <MudNumericField @bind-Value="MinRuntime" Label="Mindest-Laufzeit" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="Min" />
+                        <MudNumericField @bind-Value="MaxRuntime" Label="Maximale Laufzeit (Schutz)" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="Min" />
+                        <MudNumericField @bind-Value="FanPauseTime" Label="Zwangspause nach Betrieb" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="Min" />
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        @* --- TAB 2: ENERGIE & SMART FEATURES --- *@
+        <MudTabPanel Text="Smart & Energie" Icon="@Icons.Material.Filled.AutoAwesome">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Energie-Management</MudText>
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <MudStack>
+                            <MudSwitch @bind-Value="PvOptimization" Label="Photovoltaik-Priorität" Color="Color.Success" />
+                            <MudText Typo="Typo.caption">Erhöht Lüfterleistung bei Solarüberschuss automatisch.</MudText>
+                            <MudDivider Class="my-2" />
+                            <MudSwitch @bind-Value="OffPeakOnly" Label="Nur im Nachttarif lüften" Color="Color.Primary" />
+                            <MudSlider @bind-Value="MaxPowerDraw" Min="10" Max="100" Step="5" Color="Color.Info">Max. Leistungsaufnahme: @MaxPowerDraw %</MudSlider>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Intelligente Funktionen</MudText>
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <MudStack>
+                            <MudSwitch @bind-Value="UseWeatherForecast" Label="Wettervorhersage-Sperre" Color="Color.Primary" />
+                            <MudDivider Class="my-2" />
+                            <MudSwitch @bind-Value="AutoSeasonalAdjust" Label="Saisonale Automatik (Sommer/Winter)" Color="Color.Primary" />
+                            <MudDivider Class="my-2" />
+                            <MudSwitch @bind-Value="MoldRiskAnalysis" Label="Schimmelrisiko-Analyse (AI)" Color="Color.Primary" />
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        @* --- TAB 3: KALIBRIERUNG & WARTUNG --- *@
+        <MudTabPanel Text="System & Wartung" Icon="@Icons.Material.Filled.Build">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Class="mb-4">Kalibrierungsdaten direkt auf die Sensorwerte (Offsets) anwenden.</MudAlert>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle1">Sensor Innen (Keller)</MudText>
+                    <div class="d-flex gap-4">
+                        <MudNumericField @bind-Value="InTempOffset" Label="Offset Temp (°C)" Variant="Variant.Outlined" Step="0.1" />
+                        <MudNumericField @bind-Value="InHumOffset" Label="Offset Feuchte (%)" Variant="Variant.Outlined" Step="0.1" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle1">Sensor Außen</MudText>
+                    <div class="d-flex gap-4">
+                        <MudNumericField @bind-Value="OutTempOffset" Label="Offset Temp (°C)" Variant="Variant.Outlined" Step="0.1" />
+                        <MudNumericField @bind-Value="OutHumOffset" Label="Offset Feuchte (%)" Variant="Variant.Outlined" Step="0.1" />
+                    </div>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDivider Class="my-4" />
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudText>Lüfter-Betriebsstunden: 1.240 h</MudText>
+                        <MudButton StartIcon="@Icons.Material.Filled.History" Variant="Variant.Text" Color="Color.Error">Wartungszähler zurücksetzen</MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Zeitplan" Icon="@Icons.Material.Filled.HistoryToggleOff">
+            <MudAlert Severity="Severity.Info" Class="mb-4" Variant="Variant.Outlined">
+                Klicke auf die Stundenblöcke, um feste Betriebszeiten zu erzwingen.
+                <br />
+                <span style="font-weight:bold">Grün: Immer AN</span> |
+                <span style="font-weight:bold">Rot: Immer AUS (Pause)</span> |
+                <span style="font-weight:bold">Grau: Automatik</span> |
+                <span style="font-weight:bold">Blau: </span>
+            </MudAlert>
+
+            <MudPaper Elevation="0" Class="pa-4 bg-transparent">
+                @foreach (var day in Enum.GetValues<DayOfWeek>().OrderBy(d => (int)d == 0 ? 7 : (int)d))
+                {
+                    <div class="mb-5">
+                        <div class="d-flex justify-space-between align-center mb-1">
+                            <MudText Typo="Typo.subtitle2" Inline="true" Class="font-weight-bold">@GetDayName(day)</MudText>
+
+                            @* Button-Leiste für den Tag *@
+                            <div class="d-flex gap-1">
+                                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+                                               OnClick="() => CopyDay(day)" Title="Tag kopieren" Color="Color.Default" />
+
+                                <MudIconButton Icon="@Icons.Material.Filled.ContentPaste" Size="Size.Small"
+                                               OnClick="() => PasteDay(day)" Title="Einfügen"
+                                               Color="Color.Primary" Disabled="@(Clipboard == null)" />
+
+                                <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Size="Size.Small"
+                                               OnClick="() => ResetDay(day)" Title="Zurücksetzen (Automatik)" Color="Color.Error" />
+                            </div>
+                        </div>
+                        <div class="d-flex w-100" style="height: 40px; border: 1px solid var(--mud-palette-lines-default); border-radius: 6px; overflow: hidden; background: #f5f5f5;">
+                            @for (int hour = 0; hour < 24; hour++)
+                            {
+                                var currentHour = hour;
+                                var currentDay = day;
+                                <div @onclick="() => ToggleHourState(currentDay, currentHour)"
+                                     style="flex: 1;
+                                            cursor: pointer;
+                                            background-color: @GetColorForState(currentDay, currentHour);
+                                            border-right: 1px solid rgba(0,0,0,0.08);
+                                            transition: all 0.1s ease;"
+                                     title="@hour:00 Uhr: @(GetStateName(currentDay, currentHour))">
+                                </div>
+                            }
+                        </div>
+                        <div class="d-flex justify-space-between px-1">
+                            <MudText Typo="Typo.caption" Style="font-size: 0.65rem">00:00</MudText>
+                            <MudText Typo="Typo.caption" Style="font-size: 0.65rem">06:00</MudText>
+                            <MudText Typo="Typo.caption" Style="font-size: 0.65rem">12:00</MudText>
+                            <MudText Typo="Typo.caption" Style="font-size: 0.65rem">18:00</MudText>
+                            <MudText Typo="Typo.caption" Style="font-size: 0.65rem">23:00</MudText>
+                        </div>
+                    </div>
+                }
+            </MudPaper>
+        </MudTabPanel>
+    </MudTabs>
+
+    <div class="d-flex justify-end gap-4 mt-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Save" OnClick="Save">Konfiguration Speichern</MudButton>
+    </div>
+</MudContainer>
+
+@code {
+    // Regelung
+    private double DewPointDelta = 3.0;
+    private double Hysteresis = 0.5;
+    private double MinIndoorTemp = 10.0;
+    private int MinRuntime = 15;
+    private int MaxRuntime = 180;
+    private int FanPauseTime = 30;
+
+    // Energie & Smart
+    private bool PvOptimization = false;
+    private bool OffPeakOnly = false;
+    private int MaxPowerDraw = 100;
+    private bool UseWeatherForecast = true;
+    private bool AutoSeasonalAdjust = true;
+    private bool MoldRiskAnalysis = true;
+
+    // Kalibrierung
+    private double InTempOffset = 0.0;
+    private double InHumOffset = 0.0;
+    private double OutTempOffset = 0.0;
+    private double OutHumOffset = 0.0;
+
+    private Dictionary<DayOfWeek, int[]> WeeklySchedule = new();
+    private int[]? Clipboard = null; // Die "Zwischenablage"
+
+    private async void Save()
+    {
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        Snackbar.Configuration.VisibleStateDuration = 2000;
+        Snackbar.Configuration.ShowTransitionDuration = 250;
+        Snackbar.Configuration.HideTransitionDuration = 500;
+        Snackbar.Add("Einstellungen wurden erfolgreich gespeichert!", Severity.Success);
+        await JSRuntime.InvokeVoidAsync("window.scrollTo", new { top = 0, behavior = "smooth" });
+    }
+
+    protected override void OnInitialized()
+    {
+        foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            WeeklySchedule[day] = new int[24];
+        }
+    }
+
+    private void ToggleHourState(DayOfWeek day, int hour)
+    {
+        WeeklySchedule[day][hour] = (WeeklySchedule[day][hour] + 1) % 4;
+    }
+
+    // --- NEUE LOGIK FÜR DIE BUTTONS ---
+
+    private void CopyDay(DayOfWeek day)
+    {
+        // Erstellt eine tiefe Kopie des Arrays in die Zwischenablage
+        Clipboard = (int[])WeeklySchedule[day].Clone();
+    }
+
+    private void PasteDay(DayOfWeek day)
+    {
+        if (Clipboard != null)
+        {
+            WeeklySchedule[day] = (int[])Clipboard.Clone();
+        }
+    }
+
+    private void ResetDay(DayOfWeek day)
+    {
+        // Alles zurück auf 0 (Automatik / Grau)
+        WeeklySchedule[day] = new int[24];
+    }
+
+    // --- HILFSMETHODEN ---
+
+    private string GetColorForState(DayOfWeek day, int hour) => WeeklySchedule[day][hour] switch
+    {
+        1 => "var(--mud-palette-success)", // Grün (AN)
+        2 => "var(--mud-palette-error)",   // Rot (AUS)
+        3 => "var(--mud-palette-info)",    // Blau (FLÜSTERN)
+        _ => "transparent"                 // Automatik
+    };
+
+    private string GetStateName(DayOfWeek day, int hour) => WeeklySchedule[day][hour] switch
+    {
+        1 => "Dauerbetrieb",
+        2 => "Sperrzeit",
+        3 => "Flüstermodus",
+        _ => "Automatik"
+    };
+
+    private string GetDayName(DayOfWeek day) => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day);
+}

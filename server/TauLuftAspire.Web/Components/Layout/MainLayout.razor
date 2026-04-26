@@ -1,0 +1,89 @@
+﻿@using Model.Entity
+@using MudBlazor
+@using TauLuftAspire.Web.ApiClient
+@inherits LayoutComponentBase
+@inject LogApiClient LogApiClient
+
+<MudThemeProvider Theme="_myCustomTheme" @bind-IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        Taupunkt Lüftung
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" OnClick="@OpenGithub" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" MiniWidth="75px">
+        <NavMenu IsMini="@(!_drawerOpen)" Logs="Logs" />
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+
+    private List<LogEntry> Logs { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRealLogs();
+    }
+
+    private async Task LoadRealLogs()
+    {
+        try
+        {
+            Logs = await LogApiClient.GetNewLogsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler beim Laden: {ex.Message}");
+        }
+    }
+
+
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    void OpenGithub()
+    {
+        
+    }
+
+    void DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private bool _isDarkMode;
+
+    private MudTheme _myCustomTheme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Background = "#171717",
+            Surface = "#121212",
+            AppbarBackground = "#080808",
+            DrawerBackground = "#0a0a0a",
+            Primary = "#594ae2",
+            Secondary = "#00c853",
+            TextPrimary = "#e0e0e0",
+            TextSecondary = "rgba(255,255,255, 0.70)"
+        }
+    };
+}

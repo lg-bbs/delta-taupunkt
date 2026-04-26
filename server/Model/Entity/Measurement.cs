@@ -1,0 +1,9 @@
+﻿namespace TauLuftAspire.Model.Entity;
+
+public class Measurement
+{
+    public int Id { get; set; }
+    public DateTime Timestamp { get; set; }
+    public SingleMeasurement Inside { get; set; }
+    public SingleMeasurement Outside { get; set; }
+}

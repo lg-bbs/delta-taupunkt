@@ -1,0 +1,64 @@
+﻿@using Model.Entity
+@using Model.Enum
+@using MudBlazor
+@using TauLuftAspire.Web.Components.Extensions
+
+<MudPaper Elevation="0" Height="100%">
+    <MudNavMenu Rounded="true" Bordered="true" Margin="Margin.Dense" Color="Color.Primary" Class="pa-2" Height="100%">
+        @if(!IsMini && false)
+        {
+            <MudText Typo="Typo.h6" Class="px-4">Taupunkt Lüftung</MudText>
+            <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Von: Lukas und Wilko</MudText>
+            <MudDivider Class="my-2" />
+        }
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">@Text("Dashboard")</MudNavLink>
+        <MudNavLink Href="/status" Icon="@Icons.Material.Filled.Info">@Text("Status")</MudNavLink>
+        <MudNavLink Href="/counter" Icon="@Icons.Material.Filled.BarChart">@Text("Auswertungen")</MudNavLink>
+        <MudNavLink Href="/logs" Icon="@(HaveLogs ? null : Icons.Material.Filled.Notifications)">
+            @if(HaveLogs)
+            {
+                <div class="d-flex align-center">
+                    <MudBadge Color="LogColor"
+                              Origin="Origin.TopRight"
+                              Dot Overlap Bordered
+                              Class="ml-n3 mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" />
+                    </MudBadge>
+                    @if (!IsMini)
+                    {
+                        <MudBadge Content="LogCount" Color="LogColor" Origin="Origin.CenterRight" BadgeClass="mx-4">
+                            @Text("Meldungen")
+                        </MudBadge>
+                    }
+                </div>
+            }
+            else
+            {
+                @Text("Meldungen")
+            }
+        </MudNavLink>
+        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">@Text("Einstellungen")</MudNavLink>
+    </MudNavMenu>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public bool IsMini { get; set; }
+
+    [Parameter]
+    public required List<LogEntry> Logs { get; set; } = new();
+
+    public bool HaveLogs => Logs.Count != 0;
+    public LogSeverity? MaxLogSeverity => HaveLogs ? Logs.Max(l => l.Severity) : null;
+    public Color LogColor => MaxLogSeverity?.MudColor ?? Color.Default;
+
+    public int LogCount => MaxLogSeverity == LogSeverity.Critical 
+        ? Logs.Count(l => l.Severity == LogSeverity.Critical || l.Severity == LogSeverity.Error) 
+        : Logs.Count(l => l.Severity == MaxLogSeverity);
+
+    public string Text(string text)
+    {
+        if (IsMini) return "";
+        return text;
+    }
+}

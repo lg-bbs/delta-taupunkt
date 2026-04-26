@@ -1,0 +1,137 @@
+﻿@page "/logs"
+@inject IDialogService DialogService
+@inject LogApiClient LogApiClient
+@using Model.Entity
+@using Model.Enum
+@using MudBlazor
+@using TauLuftAspire.Web.ApiClient
+@using TauLuftAspire.Web.Components.Extensions
+@using TauLuftAspire.Web.Components.Layout
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    @* Header Bereich *@
+    <div class="d-flex justify-space-between align-center mb-6">
+        <MudText Typo="Typo.h4">System-Protokoll</MudText>
+        <div class="d-flex">
+            <MudSelect T="int" Label="Angezeigter Schweregrad" Variant="Variant.Outlined" Dense Value="@minLevelPriority" ValueChanged="OnLevelChanged" Class="mr-3" Style="max-width: 250px; min-width: 250px">
+                <MudSelectItem Value="1">Debug</MudSelectItem>
+                <MudSelectItem Value="2">Alles</MudSelectItem>
+                <MudSelectItem Value="3">Info</MudSelectItem>
+                <MudSelectItem Value="4">Warnungen</MudSelectItem>
+                <MudSelectItem Value="5">Fehler</MudSelectItem>
+            </MudSelect>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadLogs" StartIcon="@Icons.Material.Filled.Refresh" Style="height: fit-content; align-self: center">Aktualisieren</MudButton>
+        </div>
+        
+    </div>
+
+    <MudTable Items="@FilteredLogs" Hover="true" Dense="true" FixedHeader="true"
+              Filter="new Func<LogEntry, bool>(FilterSearch)" SortLabel="Sortieren" RowsPerPage="25" GroupBy="@_groupDefinition">
+
+        <ToolBarContent>
+            <MudTextField @bind-Value="searchString" Placeholder="Suche in Meldungen..." Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<LogEntry, object>(x => x.Timestamp)">Zeit</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<LogEntry, object>(x => GetLevelPriority(x.Severity))">Level</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<LogEntry, object>(x => x.Source)">Quelle</MudTableSortLabel></MudTh>
+            <MudTh>Meldung</MudTh>
+            <MudTh Style="text-align:right">Aktionen</MudTh>
+        </HeaderContent>
+
+        <GroupHeaderTemplate>
+            <MudTh Class="mud-theme-dark pa-2" colspan="5" Style="background-color: var(--mud-palette-background-grey);">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-2" />
+                    <MudText Typo="Typo.subtitle2">
+                        @(((DateTime)context.Key).ToString("dd. MMMM yyyy"))
+                    </MudText>
+                </div>
+            </MudTh>
+        </GroupHeaderTemplate>
+
+        <RowTemplate>
+            <MudTd>@context.Timestamp.ToString("HH:mm:ss")</MudTd>
+            <MudTd>
+                <MudChip T="string" Color="context.Severity.MudColor"
+                         Icon="@context.Severity.MudIcon"
+                         Size="Size.Small" Variant="Variant.Filled">
+                    @context.Severity.ToString()
+                </MudChip>
+            </MudTd>
+            <MudTd>@context.Source</MudTd>
+            <MudTd>
+                <div style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    @context.Message
+                </div>
+            </MudTd>
+            <MudTd Style="text-align:right">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                           OnClick="@(() => OpenDetailDialog(context))"
+                           StartIcon="@Icons.Material.Filled.ZoomIn">Details</MudButton>
+            </MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+
+<style>
+    .h-40 {
+        height: 40px !important;
+    }
+</style>
+
+@code {
+    private TableGroupDefinition<LogEntry> _groupDefinition = new()
+    {
+        GroupName = "Datum",
+        Indentation = false,
+        Expandable = false,
+        Selector = (e) => e.Timestamp.Date
+    };
+
+    private string searchString = "";
+    private int minLevelPriority = 2; // Standard: Info (zeigt alles)
+    private List<LogEntry> Logs = new();
+
+    // Hierarchische Filter-Logik
+    private IEnumerable<LogEntry> FilteredLogs => Logs.Where(x => GetLevelPriority(x.Severity) >= minLevelPriority);
+
+    private void OnLevelChanged(int newPriority) => minLevelPriority = newPriority;
+
+    private bool FilterSearch(LogEntry element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        return element.Message.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+               element.Source.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Mapping von Level auf Priorität (für Sortierung und Filter)
+    private int GetLevelPriority(LogSeverity severity) => ((int)severity);
+
+    // --- DIALOG LOGIK ---
+    private void OpenDetailDialog(LogEntry entry)
+    {
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        DialogService.ShowMessageBox("Log-Details", $"{entry.Message}\n\n{entry.Details}", options: options);
+    }
+
+    protected override void OnInitialized()
+    {
+        LoadLogs();
+    }
+
+    private void LoadLogs()
+    {
+        Task.Run(async () =>
+        {
+            Logs = await LogApiClient.GetAllLogsAsync();
+        });
+    }
+}

@@ -1,0 +1,382 @@
+﻿@page "/status"
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-6">
+    <MudText Typo="Typo.h4" Class="mb-6">System-Diagnose & Status</MudText>
+
+    <MudGrid>
+        @* --- OBEN LINKS: VISUELLE SYSTEM-DARSTELLUNG --- *@
+        <MudItem xs="12" md="7" lg="8">
+            <MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center justify-center relative"
+                      Style="height: 400px; background-color: var(--mud-palette-surface-dark);">
+
+                @* 1. Die Verbindungs-Linien (SVG) *@
+                <svg width="100%" height="100%" style="position: absolute; top:0; left:0; z-index: 0;">
+                    <line x1="50%" y1="50%" x2="20%" y2="20%" stroke="@GetColor(SensorInStatus)" stroke-width="4" />
+
+                    <line x1="50%" y1="50%" x2="80%" y2="20%" stroke="@GetColor(SensorOutStatus)" stroke-width="4" />
+
+                    <line x1="50%" y1="50%" x2="20%" y2="80%" stroke="@GetColor(MotorStatus)" stroke-width="@(MotorActive ? "6" : "4")"
+                          stroke-dasharray="@(MotorActive ? "5,5" : "0")" class="@(MotorActive ? "anim-flow" : "")" />
+
+                    <line x1="50%" y1="50%" x2="80%" y2="80%" stroke="@GetColor(LcdStatus)" stroke-width="4" />
+                </svg>
+
+                @* 2. Die Icons (Absolut positioniert über den Linienenden) *@
+
+                @* ZENTRUM: Raspberry Pi *@
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="Color.Success" />
+                        <MudText Typo="Typo.caption" Class="mt-1">Controller</MudText>
+                    </MudPaper>
+                </div>
+
+                @* OBEN LINKS: Sensor Innen *@
+                <div style="position: absolute; top: 20%; left: 20%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Home" Color="@GetMudColor(SensorInStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Innen</MudText>
+                        <MudText Typo="Typo.body2"><b>21.5 °C</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* OBEN RECHTS: Sensor Außen *@
+                <div style="position: absolute; top: 20%; left: 80%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Park" Color="@GetMudColor(SensorOutStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Außen</MudText>
+                        <MudText Typo="Typo.body2"><b>12.0 °C</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* UNTEN LINKS: Motor *@
+                <div style="position: absolute; top: 80%; left: 20%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Cyclone" Color="@GetMudColor(MotorStatus)" Size="Size.Large" Class="@(MotorActive ? "spin-animation" : "")" />
+                        <MudText Typo="Typo.caption">Lüfter</MudText>
+                        <MudText Typo="Typo.body2"><b>@(MotorActive ? "AN" : "AUS")</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* UNTEN RECHTS: LCD *@
+                <div style="position: absolute; top: 80%; left: 80%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartScreen" Color="@GetMudColor(LcdStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Display</MudText>
+                    </MudPaper>
+                </div>
+
+            </MudPaper>
+        </MudItem>
+
+        @* --- OBEN RECHTS: FEHLER & WARNUNGEN LISTE --- *@
+        <MudItem xs="12" md="5" lg="4">
+            <MudPaper Elevation="4" Class="pa-0 d-flex flex-column" Style="height: 400px;">
+
+                @* 1. Die Liste (nimmt den verfügbaren Platz ein und scrollt) *@
+                <div style="flex-grow: 1; overflow-y: auto;" class="pt-2">
+                    <MudList T="string" Dense="true">
+                        @if (SystemMessages.Any())
+                        {
+                            @foreach (var msg in SystemMessages)
+                            {
+                                <MudListItem Icon="@msg.Icon" IconColor="@msg.Color">
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.subtitle2">@msg.Title</MudText>
+                                        <MudText Typo="Typo.caption">@msg.Time.ToString("HH:mm:ss") - @msg.Description</MudText>
+                                    </div>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center justify-center mt-12">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                <MudText Class="mt-2" Color="Color.Success">Keine Störungen</MudText>
+                            </div>
+                        }
+                    </MudList>
+                </div>
+
+                @* 2. Der Button-Footer (immer unten sichtbar) *@
+                <div class="pa-2 d-flex justify-center border-t">
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               EndIcon="@Icons.Material.Filled.ArrowForward"
+                               Href="/logs"
+                               FullWidth="true"
+                               Class="py-2">
+                        Alle Meldungen anzeigen
+                    </MudButton>
+                </div>
+
+            </MudPaper>
+        </MudItem>
+
+        @* --- GRUPPE 1: KLIMA-DETAILS --- *@
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-2 mt-4 ml-1">Klima & Feuchtigkeit</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg border-l-4 border-solid" Style="border-color: var(--mud-palette-primary);">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Taupunkt-Differenz</MudText>
+                            <MudText Typo="Typo.h4">@TpDiff.ToString("F1") K</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Difference" Color="Color.Primary" Size="Size.Large" Alpha="0.5" />
+                    </div>
+                    <div class="d-flex align-center mt-2">
+                        <MudIcon Icon="@(TpDiff > 3 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingFlat)"
+                                 Color="@(TpDiff > 3 ? Color.Success : Color.Default)" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Class="ml-1">@(TpDiff > 3 ? "Effiziente Trocknung" : "Geringer Effekt")</MudText>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Absolutfeuchte (In / Out)</MudText>
+                    <div class="d-flex align-end gap-2">
+                        <MudText Typo="Typo.h4">@AhIn.ToString("F1")</MudText>
+                        <MudText Typo="Typo.caption" Class="mb-1">/ @AhOut.ToString("F1") g/m³</MudText>
+                    </div>
+                    <MudProgressLinear Color="@(AhIn > AhOut ? Color.Success : Color.Error)"
+                                       Value="@AhIn" Max="25" Class="mt-3" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Schimmelrisiko</MudText>
+                        <MudChip T="string" Color="@GetRiskColor(RiskScore)" Size="Size.Small" Variant="Variant.Text">@RiskScore %</MudChip>
+                    </div>
+                    <MudText Typo="Typo.h4" Color="@GetRiskColor(RiskScore)">@RiskLevel</MudText>
+                    <MudProgressLinear Color="@GetRiskColor(RiskScore)" Value="@RiskScore" Class="mt-3" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Außentemperatur</MudText>
+                            <MudText Typo="Typo.h4">@TempOut.ToString("F1") °C</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.WbSunny" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                    <MudText Typo="Typo.caption" Class="mt-2 d-block">Vorhersage: Sonnig, kein Regen</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        @* --- GRUPPE 2: BETRIEB & TECHNIK --- *@
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-2 mt-4 ml-1">Technik & Energie</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg" Style="background: linear-gradient(145deg, var(--mud-palette-surface) 0%, var(--mud-palette-background-grey) 100%);">
+                <MudCardContent>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Lüftergeschwindigkeit</MudText>
+                    <div class="d-flex align-center mt-1">
+                        <MudText Typo="Typo.h4" Class="mr-2">@FanSpeed %</MudText>
+                        @if (FanSpeed > 0)
+                        {
+                            <div class="fan-blob"></div>
+                        }
+                    </div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Modus: @CurrentMode</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Energie Heute</MudText>
+                            <MudText Typo="Typo.h4">0.82 <span style="font-size:1rem">kWh</span></MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                    <MudText Typo="Typo.caption" Color="Color.Success" Class="mt-2">PV-Anteil: 85%</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Filterzustand</MudText>
+                    <div class="d-flex justify-space-between align-end mt-1">
+                        <MudText Typo="Typo.h4">72 %</MudText>
+                        <MudText Typo="Typo.caption" Class="mb-1">Noch 124 Tage</MudText>
+                    </div>
+                    <MudProgressLinear Color="Color.Info" Value="72" Class="mt-3" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="4" Class="rounded-lg">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Wartungs-Timer</MudText>
+                            <MudText Typo="Typo.h4">1.4k <span style="font-size:1rem">h</span></MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Info" Size="Size.Large" Alpha="0.5" />
+                    </div>
+                    <MudText Typo="Typo.caption" Class="mt-2 d-block">Gesamtlaufzeit Lüfter</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    /* CSS für die rotierende Animation des Lüfters */
+    .spin-animation {
+        animation: spin 2s linear infinite;
+    }
+
+    @@keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* CSS für gestrichelte Linien-Animation (Stromfluss) */
+    .anim-flow {
+        stroke-dashoffset: 100;
+        animation: dash 2s linear infinite;
+    }
+
+    @@keyframes dash {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    /* Kleiner pulsierender Punkt für aktiven Lüfter */
+    .fan-blob {
+        width: 12px;
+        height: 12px;
+        background: var(--mud-palette-info);
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(33, 150, 243, 1);
+        animation: pulse-blue 2s infinite;
+    }
+
+    @@keyframes pulse-blue {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+        }
+    }
+</style>
+
+@code {
+    // Status-Typ definition (0=Unknown, 1=OK, 2=Warning, 3=Error, 4=Active, 5=Info)
+    enum StatusType { Unknown, Ok, Warning, Error, Active, Info }
+
+    private double TpDiff = 4.2;
+    private double AhIn = 11.5;
+    private double AhOut = 7.3;
+    private double TempOut = 12.4;
+    private int RiskScore = 15;
+    private string RiskLevel => RiskScore > 70 ? "Kritisch" : (RiskScore > 40 ? "Erhöht" : "Gering");
+    private int FanSpeed = 60;
+    private string CurrentMode = "Automatik (Eco)";
+
+    private Color GetRiskColor(int score) => score switch
+    {
+        > 70 => Color.Error,
+        > 40 => Color.Warning,
+        _ => Color.Success
+    };
+
+    // Status-Variablen (Diese würdest du aus deiner DB/API füllen)
+    private StatusType SensorInStatus = StatusType.Ok;
+    private StatusType SensorOutStatus = StatusType.Warning; // Beispiel: Warnung
+    private StatusType MotorStatus = StatusType.Active;      // Beispiel: Läuft gerade
+    private StatusType LcdStatus = StatusType.Ok;       // Beispiel: Grau
+
+    private bool MotorActive => MotorStatus == StatusType.Active;
+
+    // Simulation von Nachrichten
+    private List<SystemMessage> SystemMessages = new()
+    {
+        new SystemMessage("Sensor Timeout", "Keine Daten von Außen seit 5 Min", StatusType.Warning),
+        new SystemMessage("Lüfter Start", "Taupunktlogik hat Lüftung aktiviert", StatusType.Info),
+        new SystemMessage("System Boot", "Raspberry Pi neu gestartet", StatusType.Ok)
+    };
+
+    // Hilfsklasse für die Liste
+    class SystemMessage
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime Time { get; set; } = DateTime.Now;
+        public string Icon { get; set; }
+        public Color Color { get; set; }
+
+        public SystemMessage(string t, string d, StatusType s)
+        {
+            Title = t; Description = d;
+            switch (s)
+            {
+                case StatusType.Error: Icon = Icons.Material.Filled.Error; Color = Color.Error; break;
+                case StatusType.Warning: Icon = Icons.Material.Filled.Warning; Color = Color.Warning; break;
+                case StatusType.Info: Icon = Icons.Material.Filled.Info; Color = Color.Info; break;
+                case StatusType.Ok: Icon = Icons.Material.Filled.CheckCircle; Color = Color.Success; break;
+                default: Icon = Icons.Material.Filled.Help; Color = Color.Default; break;
+            }
+        }
+    }
+
+    // Farbe für SVG (Hex-Strings)
+    private string GetColor(StatusType status) => status switch
+    {
+        StatusType.Ok => "#00c853",      // Grün
+        StatusType.Warning => "#ff9800", // Gelb/Orange
+        StatusType.Error => "#f44336",   // Rot
+        StatusType.Active => "#2196f3",  // Blau
+        StatusType.Info => "#2196f3",    // Blau
+        _ => "#9e9e9e"               // Grau (Unknown)
+    };
+
+    // Farbe für MudIcons (MudBlazor Color Enum)
+    private Color GetMudColor(StatusType status) => status switch
+    {
+        StatusType.Ok => Color.Success,
+        StatusType.Warning => Color.Warning,
+        StatusType.Error => Color.Error,
+        StatusType.Active => Color.Info,
+        StatusType.Info => Color.Info,
+        _ => Color.Default
+    };
+}

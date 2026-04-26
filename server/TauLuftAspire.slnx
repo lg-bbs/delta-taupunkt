@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Model/TauLuftAspire.Model.csproj" Id="66397bcd-d7c4-4f2f-9d12-742608ea2c28" />
+  <Project Path="TauLuftAspire.ApiService/TauLuftAspire.ApiService.csproj" />
+  <Project Path="TauLuftAspire.AppHost/TauLuftAspire.AppHost.csproj" />
+  <Project Path="TauLuftAspire.ServiceDefaults/TauLuftAspire.ServiceDefaults.csproj" />
+  <Project Path="TauLuftAspire.Web/TauLuftAspire.Web.csproj" />
+</Solution>

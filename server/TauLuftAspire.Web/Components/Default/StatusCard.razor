@@ -1,0 +1,65 @@
+﻿@using MudBlazor
+
+@if(AsItem)
+{
+    <MudItem xs="12" sm="6" md="3">
+        <MudCard Elevation="@Elevation" Class="@CardClass">
+            <MudCardContent>
+                <MudText Typo="Typo.subtitle2" Color="@Theme">@Title</MudText>
+                <MudText Typo="Typo.h5">@Text</MudText>
+                <MudText Typo="Typo.caption">@Caption</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+}
+else
+{
+    <MudCard Elevation="@Elevation" Class="@CardClass">
+        <MudCardContent>
+            <MudText Typo="Typo.subtitle2" Color="@Theme">@Title</MudText>
+            <MudText Typo="Typo.h5">@Text</MudText>
+            <MudText Typo="Typo.caption">@Caption</MudText>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter]
+    public bool AsItem { get; set; } = true;
+
+    [Parameter]
+    public int Elevation { get; set; } = 4;
+
+    [Parameter]
+    public bool Rounded { get; set; } = true;
+
+    [Parameter]
+    public bool Boarder { get; set; } = true;
+
+    [Parameter]
+    public Color Theme { get; set; } = Color.Primary;
+
+    [Parameter]
+    public int PaddingY { get; set; } = 2;
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public string? Caption { get; set; }
+
+    private string CardClass
+    {
+        get
+        {
+            string result = "";
+            result += Rounded ? "rounded-lg " : "";
+            result += Boarder ? $"border-l-4 border-solid mud-border-{Theme.ToString().ToLower()} " : "";
+            result += PaddingY != 0 ? $"py-{PaddingY} " : "";
+            return result;
+        }
+    }
+}

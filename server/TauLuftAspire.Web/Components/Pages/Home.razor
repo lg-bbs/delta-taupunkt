@@ -1,0 +1,57 @@
+﻿@page "/"
+@using MudBlazor
+@using TauLuftAspire.Web.Components.Default
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 px-4">
+    <MudText Typo="Typo.h4" Class="mb-6">Taupunkt-Lüftung Dashboard</MudText>
+
+    <MudGrid>
+        <StatusCard Title="Innenklima" Text="21.5 °C / 65% rF" Caption="Taupunkt: 14.2 °C" />
+        <StatusCard Title="Außenklima" Text="12.0 °C / 80% rF" Caption="Taupunkt: 8.5 °C" Theme="Color.Info" />
+        <StatusCard Title="Empfehlung" Text="Lüften möglich" Caption="Delta TP: 5.7 °C" Theme="Color.Success" />
+        <StatusCard Title="Lüfter-Status" Text="AKTIV" Caption="Seit 45 Minuten" Theme="Color.Warning" />
+
+        @* --- DIAGRAMME IN DER MITTE --- *@
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4" Elevation="4">
+                <MudText Typo="Typo.h6" Class="mb-4">Taupunkt-Verlauf (24h)</MudText>
+                <MudChart ChartType="ChartType.Line" 
+                          ChartOptions="@Options"
+                          ChartSeries="@Series" 
+                          XAxisLabels="@XAxisLabels" 
+                          Width="100%" Height="300px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4" Elevation="4">
+                <MudText Typo="Typo.h6" Class="mb-4">Aktuelle Feuchte</MudText>
+                <div class="d-flex justify-center">
+                    <MudChart ChartType="ChartType.Donut" 
+                              InputData="@DonutData" 
+                              InputLabels="@DonutLabels" 
+                              Width="200px" Height="200px" />
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // Beispiel-Daten für die Diagramme
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Taupunkt Innen", Data = new double[] { 14, 14.2, 17.5, 14.1, 0, 13.5 } },
+        new ChartSeries() { Name = "Taupunkt Außen", Data = new double[] { 8, 8.5, 10, 3, 4, 10 } },
+    };
+    public string[] XAxisLabels = { "12:00", "14:00", "16:00", "18:00", "20:00", "22:00" };
+
+    public double[] DonutData = { 65, 35 };
+    public string[] DonutLabels = { "Feuchte (64%)" };
+
+    public ChartOptions Options = new ChartOptions
+        {
+            InterpolationOption = InterpolationOption.NaturalSpline
+        };
+}
