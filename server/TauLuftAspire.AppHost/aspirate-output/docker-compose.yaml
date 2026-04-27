@@ -1,0 +1,42 @@
+services:
+  aspire-dashboard:
+    container_name: "aspire-dashboard"
+    image: "mcr.microsoft.com/dotnet/aspire-dashboard:9.0"
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    ports:
+    - target: 18888
+      published: 18888
+    restart: unless-stopped
+  postgres-server:
+    container_name: "postgres-server"
+    image: "docker.io/library/postgres:latest"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "nHvWDB4TiXgaiSA6WCefcK"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_SERVICE_NAME: "postgres-server"
+    volumes:
+    - "tauluftaspire-apphost-dfc3a1a218-postgres-server-data:/var/lib/postgresql/data"
+    ports:
+    - target: 5432
+      published: 5432
+    restart: unless-stopped
+  env-dashboard:
+    container_name: "env-dashboard"
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_SERVICE_NAME: "env-dashboard"
+    ports:
+    - target: 18888
+      published: 18888
+    - target: 18889
+      published: 18889
+    - target: 18890
+      published: 18890
+    restart: unless-stopped
+volumes:
+  tauluftaspire-apphost-dfc3a1a218-postgres-server-data: {}

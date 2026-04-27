@@ -1,0 +1,144 @@
+{
+  "resources": {
+    "env": {
+      "error": "This resource does not support generation in the manifest."
+    },
+    "postgres-server": {
+      "type": "container.v1",
+      "connectionString": "Host={postgres-server.bindings.tcp.host};Port={postgres-server.bindings.tcp.port};Username=postgres;Password={postgres-server-password.value}",
+      "image": "docker.io/library/postgres:latest",
+      "volumes": [
+        {
+          "name": "tauluftaspire.apphost-dfc3a1a218-postgres-server-data",
+          "target": "/var/lib/postgresql/data",
+          "readOnly": false
+        }
+      ],
+      "env": {
+        "POSTGRES_HOST_AUTH_METHOD": "scram-sha-256",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256 --auth-local=scram-sha-256",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "{postgres-server-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 5432
+        }
+      }
+    },
+    "tauluftdb": {
+      "type": "value.v0",
+      "connectionString": "{postgres-server.connectionString};Database=tauluftdb"
+    },
+    "apiservice": {
+      "type": "project.v1",
+      "path": "../TauLuftAspire.ApiService/TauLuftAspire.ApiService.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{apiservice.bindings.http.targetPort}",
+        "ConnectionStrings__tauluftdb": "{tauluftdb.connectionString}",
+        "TAULUFTDB_HOST": "{postgres-server.bindings.tcp.host}",
+        "TAULUFTDB_PORT": "{postgres-server.bindings.tcp.port}",
+        "TAULUFTDB_USERNAME": "postgres",
+        "TAULUFTDB_PASSWORD": "{postgres-server-password.value}",
+        "TAULUFTDB_URI": "postgresql://postgres:{postgres-server-password-uri-encoded.value}@{postgres-server.bindings.tcp.host}:{postgres-server.bindings.tcp.port}/tauluftdb",
+        "TAULUFTDB_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres-server.bindings.tcp.host}:{postgres-server.bindings.tcp.port}/tauluftdb",
+        "TAULUFTDB_DATABASENAME": "tauluftdb",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{env-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "apiservice"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "webfrontend": {
+      "type": "project.v1",
+      "path": "../TauLuftAspire.Web/TauLuftAspire.Web.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{webfrontend.bindings.http.targetPort}",
+        "APISERVICE_HTTP": "{apiservice.bindings.http.url}",
+        "services__apiservice__http__0": "{apiservice.bindings.http.url}",
+        "APISERVICE_HTTPS": "{apiservice.bindings.https.url}",
+        "services__apiservice__https__0": "{apiservice.bindings.https.url}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{env-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "webfrontend"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "external": true
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http",
+          "external": true
+        }
+      }
+    },
+    "postgres-server-password": {
+      "type": "parameter.v0",
+      "value": "{postgres-server-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22
+            }
+          }
+        }
+      }
+    },
+    "postgres-server-password-uri-encoded": {
+      "type": "annotated.string",
+      "value": "{postgres-server-password.value}",
+      "filter": "uri"
+    },
+    "env-dashboard": {
+      "type": "container.v1",
+      "image": "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest",
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18888,
+          "external": true
+        },
+        "otlp-grpc": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18889
+        },
+        "otlp-http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18890
+        }
+      }
+    }
+  }
+}

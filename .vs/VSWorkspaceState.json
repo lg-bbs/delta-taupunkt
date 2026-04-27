@@ -1,8 +1,13 @@
 {
   "ExpandedNodes": [
     "",
+    "\\pi",
+    "\\pi\\core",
+    "\\pi\\core\\calc",
+    "\\pi\\core\\model",
     "\\server",
     "\\server\\Model"
   ],
+  "SelectedNode": "\\server\\TauLuftAspire.slnx",
   "PreviewInSolutionExplorer": false
 }

@@ -1,0 +1,26 @@
+{
+  "projectPath": ".",
+  "outputPath": "aspirate-output",
+  "containerImageTags": [
+    "latest"
+  ],
+  "containerBuilder": "docker",
+  "outputFormat": "compose",
+  "privateRegistryEmail": "aspir8@aka.ms",
+  "includeDashboard": true,
+  "secrets": {
+    "salt": "LiA671TkoZLd3vZA",
+    "hash": "9hJnLqArv0seZA2349ynZ61MztBQZpUIDLGiM1H\u002BsQY=",
+    "secrets": {
+      "postgres-server-password": {
+        "value": "LiA671TkoZLd3vZAOBOkg\u002BK2k8vW2io4iyppIc022Xh9aJIVQ2RpOCgXH5a1eTohz0I="
+      },
+      "postgres-server": {
+        "POSTGRES_PASSWORD": "LiA671TkoZLd3vZAOBOkg\u002BK2k8vW2io4iyppIc022Xh9aJIVQ2RpOCgXH5a1eTohz0I="
+      },
+      "tauluftdb": {},
+      "env-dashboard": {}
+    }
+  },
+  "processAllComponents": true
+}

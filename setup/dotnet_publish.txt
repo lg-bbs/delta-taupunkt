@@ -1,0 +1,7 @@
+dotnet publish /t:PublishContainer
+
+aspire publish -o docker-compose-artifacts
+oder
+dotnet run -- --publisher manifest --output-path ./publish
+
+docker compose up -d
