@@ -5,3 +5,10 @@ oder
 dotnet run -- --publisher manifest --output-path ./publish
 
 docker compose up -d
+
+
+anderes installieren:
+curl -dotL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+chmod +x dotnet-install.sh
+./dotnet-install.sh --channel 10.0 --runtime dotnet
+./dotnet-install.sh --channel 10.0
