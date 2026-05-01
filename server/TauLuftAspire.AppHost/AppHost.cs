@@ -3,7 +3,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 builder.AddDockerComposeEnvironment("env");
 
 var postgres = builder.AddPostgres("postgres-server")
-                      .WithImageTag("latest")
+                      .WithImageTag("17")
                       .WithDataVolume();
 
 var myDb = postgres.AddDatabase("tauluftdb");

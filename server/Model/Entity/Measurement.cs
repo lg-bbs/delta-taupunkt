@@ -7,4 +7,6 @@ public class Measurement
     public SingleMeasurement Inside { get; set; }
     public SingleMeasurement Outside { get; set; }
     public bool IsFanRunning { get; set; }
+
+    public DateTime LocalTimestamp => Timestamp.ToLocalTime();
 }

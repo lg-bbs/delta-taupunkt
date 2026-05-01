@@ -1,0 +1,11 @@
+﻿using TauLuftAspire.Model.Entity;
+
+namespace TauLuftAspire.Web.ApiClient;
+
+public class MeasurementApiClient(HttpClient httpClient)
+{
+    public async Task<List<Measurement>> GetMeasurementsAsync(DateTime from, DateTime to)
+    {
+        return await httpClient.GetFromJsonAsync<List<Measurement>>($"/api/measurements?from={from.ToUniversalTime():s}&to={to.ToUniversalTime():s}") ?? [];
+    }
+}

@@ -122,16 +122,13 @@
         DialogService.ShowMessageBox("Log-Details", $"{entry.Message}\n\n{entry.Details}", options: options);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        LoadLogs();
+        await LoadLogs();
     }
 
-    private void LoadLogs()
+    private async Task LoadLogs()
     {
-        Task.Run(async () =>
-        {
-            Logs = await LogApiClient.GetAllLogsAsync();
-        });
+        Logs = await LogApiClient.GetAllLogsAsync();
     }
 }

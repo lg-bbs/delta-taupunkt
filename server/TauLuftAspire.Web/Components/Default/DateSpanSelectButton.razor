@@ -1,0 +1,102 @@
+﻿@using MudBlazor
+<div class="d-inline-block">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.DateRange"
+                   OnClick="@TogglePopover">
+            @GetRangeButtonText()
+        </MudButton>
+
+        <MudPopover Open="@_isPickerOpen"
+                    AnchorOrigin="Origin.BottomLeft"
+                    TransformOrigin="Origin.TopLeft"
+                    Fixed="true"
+                    Class="pa-4">
+            <MudPaper Outlined="true" Elevation="4" Style="min-width: 300px;">
+                <div class="pa-4">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Schnellauswahl</MudText>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(7))">Letzte 7 Tage</MudButton>
+                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(14))">Letzte 14 Tage</MudButton>
+                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(30))">Letzte 30 Tage</MudButton>
+                    </div>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Manuell wählen</MudText>
+                <MudDateRangePicker @bind-DateRange="DateRange"
+                                    DateRangeChanged="OnDateRangeInternalChanged"
+                                    PickerVariant="PickerVariant.Static"
+                                    Margin="Margin.Dense"
+                                    Elevation="0"
+                                    ShowToolbar="false"
+                                    MaxDays="60"
+                                    MaxDate="DateTime.Now"/>
+
+                    <div class="d-flex justify-end mt-4">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="UpdateAndClose">
+                            Anwenden
+                        </MudButton>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudPopover>
+    </div>
+
+    @if (_isPickerOpen)
+    {
+        <div @onclick="UpdateAndClose"
+             style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; background:transparent;">
+        </div>
+    }
+
+@code {
+    private bool _isPickerOpen;
+
+    [Parameter] public DateRange DateRange { get; set; } = new(DateTime.Now.Date.AddDays(-7), DateTime.Now.Date);
+    [Parameter] public EventCallback<DateRange> DateRangeChanged { get; set; }
+    [Parameter] public EventCallback OnUpdate { get; set; }
+
+    private void TogglePopover()
+    {
+        _isPickerOpen = !_isPickerOpen;
+    }
+
+    private async Task UpdateAndClose()
+    {
+        _isPickerOpen = false;
+        await OnUpdate.InvokeAsync();
+    }
+
+    private async Task SetQuickRange(int days)
+    {
+        DateRange = new DateRange(DateTime.Now.Date.AddDays(-days), DateTime.Now.Date);
+        await DateRangeChanged.InvokeAsync(DateRange);
+        await UpdateAndClose();
+    }
+
+    private string GetRangeButtonText()
+    {
+        if (DateRange.Start == null || DateRange.End == null) return "Zeitraum wählen";
+
+        if (DateRange.End.Value.Date == DateTime.Now.Date)
+        {
+            if (DateRange.End.Value.Date == DateRange.Start.Value.Date)
+                return "Heute";
+            if (DateRange.Start.Value.Date == DateTime.Now.Date.AddDays(-1))
+                return "Gestern und Heute";
+
+            var diff = (DateRange.End.Value - DateRange.Start.Value).Days;
+            return $"Letzte {diff} Tage ({DateRange.Start.Value:dd.MM.} - {DateRange.End.Value:dd.MM.yyyy})";
+        }
+
+        if (DateRange.End.Value.Date == DateRange.Start.Value.Date)
+        {
+            return $"Am {DateRange.Start.Value:dd.MM.yyyy}";
+        }
+        
+        return $"{DateRange.Start.Value:dd.MM.} - {DateRange.End.Value:dd.MM.yyyy}";
+    }
+}

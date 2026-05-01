@@ -16,8 +16,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client => { client.BaseAddress = new("https+http://apiservice"); });
 builder.Services.AddHttpClient<LogApiClient>(client => { client.BaseAddress = new("https+http://apiservice"); });
+builder.Services.AddHttpClient<MeasurementApiClient>(client => { client.BaseAddress = new("https+http://apiservice"); });
 
 var app = builder.Build();
 
