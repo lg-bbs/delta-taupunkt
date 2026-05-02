@@ -20,9 +20,11 @@
     <MudDrawer @bind-Open="@_drawerOpen" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" MiniWidth="75px">
         <NavMenu IsMini="@(!_drawerOpen)" Logs="Logs" />
     </MudDrawer>
-    <MudMainContent>
-        @Body
-    </MudMainContent>
+    <CascadingValue Value="this">
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </CascadingValue>
 </MudLayout>
 
 <div id="blazor-error-ui">
@@ -37,10 +39,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadRealLogs();
+        await LoadUnreadLogs();
     }
 
-    private async Task LoadRealLogs()
+    private async Task LoadUnreadLogs()
     {
         try
         {
@@ -50,6 +52,11 @@
         {
             Console.WriteLine($"Fehler beim Laden: {ex.Message}");
         }
+    }
+
+    public void MarkNoUnreadLogs()
+    {
+        Logs = new();
     }
 
 

@@ -5,28 +5,29 @@
 @using Model.Enum
 @using MudBlazor
 @using TauLuftAspire.Web.ApiClient
+@using TauLuftAspire.Web.Components.Default
 @using TauLuftAspire.Web.Components.Extensions
 @using TauLuftAspire.Web.Components.Layout
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
     @* Header Bereich *@
-    <div class="d-flex justify-space-between align-center mb-6">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="width-100">
         <MudText Typo="Typo.h4">System-Protokoll</MudText>
         <div class="d-flex">
-            <MudSelect T="int" Label="Angezeigter Schweregrad" Variant="Variant.Outlined" Dense Value="@minLevelPriority" ValueChanged="OnLevelChanged" Class="mr-3" Style="max-width: 250px; min-width: 250px">
+            <MudSelect T="int" Label="Angezeigter Schweregrad" Variant="Variant.Outlined" Value="@minLevelPriority" ValueChanged="OnLevelChanged" Class="mr-3" Style="max-width: 250px; min-width: 250px" Dense="true">
                 <MudSelectItem Value="1">Debug</MudSelectItem>
-                <MudSelectItem Value="2">Alles</MudSelectItem>
+                <MudSelectItem Value="2">Standard</MudSelectItem>
                 <MudSelectItem Value="3">Info</MudSelectItem>
                 <MudSelectItem Value="4">Warnungen</MudSelectItem>
                 <MudSelectItem Value="5">Fehler</MudSelectItem>
             </MudSelect>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadLogs" StartIcon="@Icons.Material.Filled.Refresh" Style="height: fit-content; align-self: center">Aktualisieren</MudButton>
+            <DateSpanSelectButton @bind-DateRange="_dateRange" OnUpdate="Update" MaxDays="10" Class="mr-3" Style="height: fit-content; align-self: center" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Update" StartIcon="@Icons.Material.Filled.Refresh" Style="height: fit-content; align-self: center">Aktualisieren</MudButton>
         </div>
-        
-    </div>
+    </MudStack>
 
-    <MudTable Items="@FilteredLogs" Hover="true" Dense="true" FixedHeader="true"
-              Filter="new Func<LogEntry, bool>(FilterSearch)" SortLabel="Sortieren" RowsPerPage="25" GroupBy="@_groupDefinition">
+    <MudTable Items="@Logs" Hover="true" Dense="true" FixedHeader="true"
+              Filter="new Func<LogEntry, bool>(FilterSearch)" SortLabel="Sortieren" RowsPerPage="25" GroupBy="@_groupDefinition" Loading="@IsLoading">
 
         <ToolBarContent>
             <MudTextField @bind-Value="searchString" Placeholder="Suche in Meldungen..." Adornment="Adornment.Start"
@@ -87,6 +88,8 @@
 </style>
 
 @code {
+    [CascadingParameter] public required MainLayout MainLayout { get; set; }
+
     private TableGroupDefinition<LogEntry> _groupDefinition = new()
     {
         GroupName = "Datum",
@@ -95,40 +98,45 @@
         Selector = (e) => e.Timestamp.Date
     };
 
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-1), DateTime.Now.Date);
+
     private string searchString = "";
     private int minLevelPriority = 2; // Standard: Info (zeigt alles)
     private List<LogEntry> Logs = new();
+    private bool IsLoading = true;
 
-    // Hierarchische Filter-Logik
-    private IEnumerable<LogEntry> FilteredLogs => Logs.Where(x => GetLevelPriority(x.Severity) >= minLevelPriority);
-
-    private void OnLevelChanged(int newPriority) => minLevelPriority = newPriority;
+    private async Task OnLevelChanged(int newPriority) 
+    {
+        minLevelPriority = newPriority;
+        await Update();
+    }
 
     private bool FilterSearch(LogEntry element)
     {
         if (string.IsNullOrWhiteSpace(searchString)) return true;
-        return element.Message.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
-               element.Source.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        return element.Message?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true ||
+               element.Source?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true;
     }
 
-    // Mapping von Level auf Priorität (für Sortierung und Filter)
     private int GetLevelPriority(LogSeverity severity) => ((int)severity);
 
-    // --- DIALOG LOGIK ---
     private void OpenDetailDialog(LogEntry entry)
     {
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
-
         DialogService.ShowMessageBox("Log-Details", $"{entry.Message}\n\n{entry.Details}", options: options);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLogs();
+        await Update();
     }
 
-    private async Task LoadLogs()
+    private async Task Update()
     {
-        Logs = await LogApiClient.GetAllLogsAsync();
+        IsLoading = true;
+        Logs = await LogApiClient.GetAllLogsAsync(minLevelPriority);
+        await LogApiClient.PostAllReadAsync();
+        MainLayout.MarkNoUnreadLogs();
+        IsLoading = false;
     }
 }

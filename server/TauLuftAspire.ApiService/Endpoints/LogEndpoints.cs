@@ -12,15 +12,16 @@ public static class LogEndpoints
         var group = routes.MapGroup("/api/logs").WithTags("Logs");
         group.MapGet("/", GetAllLogs);
         group.MapGet("/new", GetNewLogs);
-        group.MapGet("/insert", InsertLog);
-        group.MapGet("/insert/test", InsertTestLogs);
+        group.MapPost("/", InsertLog);
+        group.MapPost("/test", InsertTestLogs);
+        group.MapPost("/read", LogsRead);
     }
 
-    private static async Task<List<LogEntry>> GetAllLogs(TauLuftDbContext db, int limit = 100)
+    private static async Task<List<LogEntry>> GetAllLogs(TauLuftDbContext db, int minSeverity = (int)LogSeverity.Info)
     {
         return await db.LogEntry
+            .Where(e => e.Severity >= (LogSeverity)minSeverity)
             .OrderByDescending(e => e.Timestamp)
-            .Take(limit)
             .ToListAsync();
     }
 
@@ -32,15 +33,21 @@ public static class LogEndpoints
             .ToListAsync();
     }
 
-    private static async Task InsertLog(TauLuftDbContext db, string message)
+    private static async Task LogsRead(TauLuftDbContext db)
+    {
+        await db.LogEntry.Where(e => !e.HaveRead).ForEachAsync(e => e.HaveRead = true);
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task InsertLog(TauLuftDbContext db, string message, int severity = (int)LogSeverity.Info, string source = "System", string details = "")
     {
         db.LogEntry.Add(new LogEntry
         {
             Timestamp = DateTime.UtcNow,
-            Source = "System",
+            Source = source,
             Message = message,
-            Details = "",
-            Severity = LogSeverity.Info,
+            Details = details,
+            Severity = (LogSeverity)severity,
             HaveRead = false
         });
         await db.SaveChangesAsync();

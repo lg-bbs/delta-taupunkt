@@ -1,36 +1,47 @@
 ﻿@using MudBlazor
-<div class="d-inline-block">
+<div class="d-inline-block" style="@Style">
         <MudButton Variant="Variant.Outlined"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.DateRange"
-                   OnClick="@TogglePopover">
+                   OnClick="@TogglePopover"
+                   Class="@Class">
             @GetRangeButtonText()
         </MudButton>
 
         <MudPopover Open="@_isPickerOpen"
-                    AnchorOrigin="Origin.BottomLeft"
-                    TransformOrigin="Origin.TopLeft"
+                    AnchorOrigin="Origin.BottomRight"
+                    TransformOrigin="Origin.TopRight"
                     Fixed="true"
                     Class="pa-4">
             <MudPaper Outlined="true" Elevation="4" Style="min-width: 300px;">
                 <div class="pa-4">
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Schnellauswahl</MudText>
                     <div class="d-flex flex-wrap gap-2 mb-4">
-                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(7))">Letzte 7 Tage</MudButton>
-                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(14))">Letzte 14 Tage</MudButton>
-                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(30))">Letzte 30 Tage</MudButton>
+                        <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(0))">Heute</MudButton>
+                        @if (MaxDays >= 7)
+                        {
+                            <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(7))">Letzte 7 Tage</MudButton>                     
+                        }
+                        @if (MaxDays >= 14)
+                        {
+                            <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(14))">Letzte 14 Tage</MudButton>
+                        }
+                        @if (MaxDays >= 30)
+                        {
+                            <MudButton Variant="Variant.Text" OnClick="@(() => SetQuickRange(30))">Letzte 30 Tage</MudButton>
+                        }
                     </div>
 
                     <MudDivider Class="my-4" />
 
                     <MudText Typo="Typo.subtitle2" Class="mb-2">Manuell wählen</MudText>
-                <MudDateRangePicker @bind-DateRange="DateRange"
+                <MudDateRangePicker DateRange="DateRange"
                                     DateRangeChanged="OnDateRangeInternalChanged"
                                     PickerVariant="PickerVariant.Static"
                                     Margin="Margin.Dense"
                                     Elevation="0"
                                     ShowToolbar="false"
-                                    MaxDays="60"
+                                    MaxDays="@MaxDays"
                                     MaxDate="DateTime.Now"/>
 
                     <div class="d-flex justify-end mt-4">
@@ -47,9 +58,7 @@
 
     @if (_isPickerOpen)
     {
-        <div @onclick="UpdateAndClose"
-             style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; background:transparent;">
-        </div>
+        <div @onclick="UpdateAndClose" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; background:transparent;" />
     }
 
 @code {
@@ -58,6 +67,9 @@
     [Parameter] public DateRange DateRange { get; set; } = new(DateTime.Now.Date.AddDays(-7), DateTime.Now.Date);
     [Parameter] public EventCallback<DateRange> DateRangeChanged { get; set; }
     [Parameter] public EventCallback OnUpdate { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public int MaxDays { get; set; } = 60;
 
     private void TogglePopover()
     {
@@ -96,7 +108,12 @@
         {
             return $"Am {DateRange.Start.Value:dd.MM.yyyy}";
         }
-        
+
         return $"{DateRange.Start.Value:dd.MM.} - {DateRange.End.Value:dd.MM.yyyy}";
+    }
+
+    private async Task OnDateRangeInternalChanged(DateRange args)
+    {
+        await DateRangeChanged.InvokeAsync(args);
     }
 }

@@ -6,22 +6,13 @@
 @using TauLuftAspire.Web.Components.Default
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
-    <MudText Typo="Typo.h4" Class="mb-6">Historische Daten & Analyse</MudText>
+
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="width-100">
+        <MudText Typo="Typo.h4" Class="mb-6">Auswertungen</MudText>
+        <DateSpanSelectButton @bind-DateRange="_dateRange" OnUpdate="Update" Class="mb-8" />
+    </MudStack>
 
     <MudGrid>
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 mb-4">
-                <MudDateRangePicker Label="Zeitraum auswählen" @bind-DateRange="_dateRange"
-                                    AutoClose="true" PickerVariant="PickerVariant.Dialog"
-                                    Margin="Margin.Dense" />
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" md="6" Class="d-flex align-center">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Update" Class="ml-auto">
-                Daten filtern
-            </MudButton>
-        </MudItem>
-
         <MudItem xs="12" lg="6">
             <MudCard Elevation="2">
                 <MudCardHeader>

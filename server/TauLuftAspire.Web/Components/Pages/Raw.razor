@@ -6,26 +6,14 @@
 @using TauLuftAspire.Web.Components.Default
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
-    <MudText Typo="Typo.h4" Class="mb-6">Rohdaten</MudText>
+    
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="width-100">
+        <MudText Typo="Typo.h4" Class="mb-6">Rohdaten</MudText>
+        <DateSpanSelectButton @bind-DateRange="_dateRange" OnUpdate="Update" Class="mb-8" />
+    </MudStack>
 
-    <DateSpanSelectButton @bind-DateRange="_dateRange" OnUpdate="Update" />
 
     <MudGrid>
-        @* <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 mb-4">
-                <MudDateRangePicker Label="Zeitraum auswählen" @bind-DateRange="_dateRange"
-                                    AutoClose="true" PickerVariant="PickerVariant.Dialog"
-                                    Margin="Margin.Dense" />
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" md="6" Class="d-flex align-center">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Update" Class="ml-auto">
-                Daten filtern
-            </MudButton>
-        </MudItem> *@
-
-        
-
         <MudItem xs="12">
             <MudTable Items="@_measurements" Dense="true" Hover="true" Elevation="2" RowsPerPage="50" GroupBy="@_groupDefinition">
                 <ColGroup>
@@ -104,7 +92,7 @@
         Selector = (e) => e.LocalTimestamp.Date
     };
    
-    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-2), DateTime.Now.Date);
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-3), DateTime.Now.Date);
 
     protected override async Task OnInitializedAsync()
     {

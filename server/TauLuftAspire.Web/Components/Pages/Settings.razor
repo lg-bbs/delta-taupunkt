@@ -1,7 +1,9 @@
 ﻿@page "/settings"
 @using MudBlazor
+@using TauLuftAspire.Web.ApiClient
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject LogApiClient LogApiClient
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-8 px-6">
     <MudText Typo="Typo.h4" Class="mb-6 font-weight-bold">Systemkonfiguration</MudText>
@@ -146,6 +148,22 @@
                 }
             </MudPaper>
         </MudTabPanel>
+
+        <MudTabPanel Text="Debug" Icon="@Icons.Material.Filled.BugReport">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Warning" Class="mb-4">
+                        Diese Funktionen sind nur zum Testen gedacht
+                    </MudAlert>
+                </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined" OnClick="DebugInsertTestLogs">Test-Logs einfügen</MudButton>
+                </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined">Test-Messwerte einfügen</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
     </MudTabs>
 
     <div class="d-flex justify-end gap-4 mt-6">
@@ -181,16 +199,16 @@
 
     private async void Save()
     {
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        Snackbar.Configuration.VisibleStateDuration = 2000;
-        Snackbar.Configuration.ShowTransitionDuration = 250;
-        Snackbar.Configuration.HideTransitionDuration = 500;
         Snackbar.Add("Einstellungen wurden erfolgreich gespeichert!", Severity.Success);
         await JSRuntime.InvokeVoidAsync("window.scrollTo", new { top = 0, behavior = "smooth" });
     }
 
     protected override void OnInitialized()
     {
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        Snackbar.Configuration.VisibleStateDuration = 2000;
+        Snackbar.Configuration.ShowTransitionDuration = 250;
+        Snackbar.Configuration.HideTransitionDuration = 500;
         foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
         {
             WeeklySchedule[day] = new int[24];
@@ -202,11 +220,9 @@
         WeeklySchedule[day][hour] = (WeeklySchedule[day][hour] + 1) % 4;
     }
 
-    // --- NEUE LOGIK FÜR DIE BUTTONS ---
 
     private void CopyDay(DayOfWeek day)
     {
-        // Erstellt eine tiefe Kopie des Arrays in die Zwischenablage
         Clipboard = (int[])WeeklySchedule[day].Clone();
     }
 
@@ -220,11 +236,8 @@
 
     private void ResetDay(DayOfWeek day)
     {
-        // Alles zurück auf 0 (Automatik / Grau)
         WeeklySchedule[day] = new int[24];
     }
-
-    // --- HILFSMETHODEN ---
 
     private string GetColorForState(DayOfWeek day, int hour) => WeeklySchedule[day][hour] switch
     {
@@ -243,4 +256,10 @@
     };
 
     private string GetDayName(DayOfWeek day) => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day);
+
+    private async Task DebugInsertTestLogs()
+    {
+        await LogApiClient.PostInsertTestLogs();
+        Snackbar.Add("Test-Logs wurden eingefügt!", Severity.Success);
+    }
 }
