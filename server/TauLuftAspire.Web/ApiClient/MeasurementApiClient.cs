@@ -8,4 +8,9 @@ public class MeasurementApiClient(HttpClient httpClient)
     {
         return await httpClient.GetFromJsonAsync<List<Measurement>>($"/api/measurements?from={from.ToUniversalTime():s}&to={to.ToUniversalTime():s}") ?? [];
     }
+
+    public async Task PostInsertTestMeasurementsAsync()
+    {
+        await httpClient.PostAsync($"/api/measurements/test", null);
+    }
 }

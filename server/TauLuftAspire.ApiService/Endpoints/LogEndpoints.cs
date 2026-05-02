@@ -17,10 +17,13 @@ public static class LogEndpoints
         group.MapPost("/read", LogsRead);
     }
 
-    private static async Task<List<LogEntry>> GetAllLogs(TauLuftDbContext db, int minSeverity = (int)LogSeverity.Info)
+    private static async Task<List<LogEntry>> GetAllLogs(TauLuftDbContext db, DateTime from, DateTime to, int minSeverity = (int)LogSeverity.Info)
     {
+        var fromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc);
+        var toUtc = DateTime.SpecifyKind(to, DateTimeKind.Utc);
+
         return await db.LogEntry
-            .Where(e => e.Severity >= (LogSeverity)minSeverity)
+            .Where(e => e.Severity >= (LogSeverity)minSeverity && e.Timestamp >= fromUtc && e.Timestamp <= toUtc)
             .OrderByDescending(e => e.Timestamp)
             .ToListAsync();
     }

@@ -12,6 +12,8 @@ public class LogEntry
     public string? Details { get; set; }
     public bool HaveRead { get; set; }
 
+    public DateTime LocalTimestamp => Timestamp.ToLocalTime();
+
     public LogEntry(string message, string details, string source, LogSeverity severity, DateTime timestamp, bool read = true)
     {
         Severity = severity;

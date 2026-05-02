@@ -10,9 +10,9 @@ public class LogApiClient(HttpClient httpClient)
         return await httpClient.GetFromJsonAsync<List<LogEntry>>("/api/logs/new") ?? [];
     }
 
-    public async Task<List<LogEntry>> GetAllLogsAsync(int minSeverity)
+    public async Task<List<LogEntry>> GetAllLogsAsync(DateTime from, DateTime to, int minSeverity)
     {
-        return await httpClient.GetFromJsonAsync<List<LogEntry>>($"/api/logs?minSeverity={minSeverity}") ?? [];
+        return await httpClient.GetFromJsonAsync<List<LogEntry>>($"/api/logs?from={from.ToUniversalTime():s}&to={to.ToUniversalTime():s}&minSeverity={minSeverity}") ?? [];
     }
 
     public async Task PostAllReadAsync()

@@ -35,7 +35,7 @@
         </ToolBarContent>
 
         <HeaderContent>
-            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<LogEntry, object>(x => x.Timestamp)">Zeit</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<LogEntry, object>(x => x.LocalTimestamp)">Zeit</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<LogEntry, object>(x => GetLevelPriority(x.Severity))">Level</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<LogEntry, object>(x => x.Source)">Quelle</MudTableSortLabel></MudTh>
             <MudTh>Meldung</MudTh>
@@ -54,7 +54,7 @@
         </GroupHeaderTemplate>
 
         <RowTemplate>
-            <MudTd>@context.Timestamp.ToString("HH:mm:ss")</MudTd>
+            <MudTd>@context.LocalTimestamp.ToString("HH:mm:ss")</MudTd>
             <MudTd>
                 <MudChip T="string" Color="context.Severity.MudColor"
                          Icon="@context.Severity.MudIcon"
@@ -95,7 +95,7 @@
         GroupName = "Datum",
         Indentation = false,
         Expandable = false,
-        Selector = (e) => e.Timestamp.Date
+        Selector = (e) => e.LocalTimestamp.Date
     };
 
     private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-1), DateTime.Now.Date);
@@ -134,9 +134,15 @@
     private async Task Update()
     {
         IsLoading = true;
-        Logs = await LogApiClient.GetAllLogsAsync(minLevelPriority);
+
+        DateTime start = new DateTime(DateOnly.FromDateTime(_dateRange.Start.Value), new TimeOnly(0, 0, 0));
+        DateTime end = new DateTime(DateOnly.FromDateTime(_dateRange.End.Value), new TimeOnly(23, 59, 59));
+
+        Logs = await LogApiClient.GetAllLogsAsync(start, end, minLevelPriority);
         await LogApiClient.PostAllReadAsync();
+
         MainLayout.MarkNoUnreadLogs();
+
         IsLoading = false;
     }
 }

@@ -10,8 +10,8 @@ public static class MeasurementEndpoints
     {
         var group = routes.MapGroup("/api/measurements").WithTags("Measurements");
         group.MapGet("/", GetAllMeasurements);
-        group.MapGet("/insert", InsertMeasurement);
-        group.MapGet("/insert/test", InsertTestMeasurements);
+        group.MapPost("/", InsertMeasurement);
+        group.MapPost("/test", InsertTestMeasurements);
     }
 
     private static async Task<List<Measurement>> GetAllMeasurements(TauLuftDbContext db, DateTime from, DateTime to, int limit = 100)
