@@ -1,5 +1,27 @@
 import math
 
+from pi.config import HYSTERESE, MIN_TEMP_INSIDE, MIN_TEMP_OUTSIDE, TARGET_DELTA
+from pi.core.model import Measurement
+
+def calcFanRunning(m: Measurement, fanBefore: bool):
+    deltaTP = m.inside.dew - m.outside.dew
+    run = fanBefore
+    if (deltaTP > TARGET_DELTA + HYSTERESE):
+        run = True
+    
+    if (deltaTP < TARGET_DELTA):
+        run = False
+    
+    if (m.inside.temp < MIN_TEMP_INSIDE or m.outside.temp < MIN_TEMP_OUTSIDE):
+        run = False
+    
+    m.isFanRunning = run
+    return run
+
+def addDewToMeasurement(m: Measurement):
+    m.inside.dew = taupunkt(m.inside.temp, m.inside.hum)
+    m.outside.dew = taupunkt(m.outside.temp, m.outside.hum)
+
 def taupunkt(t, r):
     # Parameter a und b basierend auf der Temperatur wählen
     if t >= 0:

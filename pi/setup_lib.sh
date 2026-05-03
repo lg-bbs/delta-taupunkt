@@ -3,4 +3,6 @@ set +e
 cd "$(dirname "$0")"
 
 source env/bin/activate
-sudo python3 dht_11.py
+pip install dht11
+pip install adafruit-blinka
+pip install adafruit-circuitpython-character-lcd
