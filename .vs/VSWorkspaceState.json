@@ -3,14 +3,14 @@
     "",
     "\\pi",
     "\\pi\\core",
-    "\\pi\\core\\model",
-    "\\pi\\core\\sensor",
+    "\\pi\\core\\calc",
     "\\server",
-    "\\server\\TauLuftAspire.AppHost",
-    "\\server\\TauLuftAspire.AppHost\\aspirate-output",
-    "\\server\\TauLuftAspire.AppHost\\Properties",
+    "\\server\\Model",
+    "\\server\\Model\\Enum",
+    "\\server\\TauLuftAspire.ApiService",
+    "\\server\\TauLuftAspire.ApiService\\Endpoints",
     "\\setup"
   ],
-  "SelectedNode": "\\setup\\dotnet_publish.txt",
+  "SelectedNode": "\\server\\Model\\Enum\\LogSeverity.cs",
   "PreviewInSolutionExplorer": false
 }
