@@ -1,6 +1,6 @@
 from core.core import core
-from pi.config import INTERVAL
-from pi.core.API import postFatalException, postInfo
+from config import INTERVAL
+from core.API import postFatalException, postInfo
 
 try:
     postInfo(f"Mess-System wurde gestartet")

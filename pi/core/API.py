@@ -1,7 +1,7 @@
 import traceback
 
-from pi.config import API_ENDPOINT
-from pi.core.model import Measurement
+from config import API_ENDPOINT
+from core.model import Measurement
 import requests
 
 def postInsertMeasurement(m: Measurement):

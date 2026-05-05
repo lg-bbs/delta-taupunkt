@@ -5,7 +5,7 @@ import board
 import busio
 from core.model.Measurement import Measurement
 import adafruit_character_lcd.character_lcd_i2c as character_lcd
-from pi.core.API import postErrorException
+from core.API import postErrorException
 
 class LCD:
     def __init__(self):

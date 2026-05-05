@@ -1,7 +1,7 @@
 import math
 
-from pi.config import HYSTERESE, MIN_TEMP_INSIDE, MIN_TEMP_OUTSIDE, TARGET_DELTA
-from pi.core.model import Measurement
+from config import HYSTERESE, MIN_TEMP_INSIDE, MIN_TEMP_OUTSIDE, TARGET_DELTA
+from core.model import Measurement
 
 def calcFanRunning(m: Measurement, fanBefore: bool):
     deltaTP = m.inside.dew - m.outside.dew

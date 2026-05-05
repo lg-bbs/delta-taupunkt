@@ -1,8 +1,8 @@
 import time
 
-from pi.core.API import postErrorException, postInfo, postInsertMeasurement, postWarn
-from pi.core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
-from pi.core.sensor import Fan
+from core.API import postErrorException, postInfo, postInsertMeasurement, postWarn
+from core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
+from core.sensor import Fan
 from .sensor.DHTHelper import DHTHelper
 from .db.db import MeasureDB
 from .sensor.LCD import LCD
