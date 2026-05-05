@@ -2,7 +2,7 @@
 set +e
 cd "$(dirname "$0")"
 
-source env/bin/activate
+source env2/bin/activate
 python main.py
 
 echo
