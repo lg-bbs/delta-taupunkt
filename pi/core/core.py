@@ -2,7 +2,7 @@ import time
 
 from core.API import postErrorException, postInfo, postInsertMeasurement, postWarn
 from core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
-from core.sensor import Fan
+from core.sensor.Fan import Fan
 from .sensor.DHTHelper import DHTHelper
 from .db.db import MeasureDB
 from .sensor.LCD import LCD
