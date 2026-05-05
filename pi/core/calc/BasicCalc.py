@@ -5,7 +5,6 @@ from core.model import Measurement
 
 def calcFanRunning(m: Measurement, fanBefore: bool):
     deltaTP = m.inside.dew - m.outside.dew
-    deltaTP = deltaTP + 20
     run = fanBefore
     if (deltaTP > TARGET_DELTA + HYSTERESE):
         run = True
