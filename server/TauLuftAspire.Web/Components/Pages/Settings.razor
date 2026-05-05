@@ -266,7 +266,7 @@
 
     private async Task DebugInsertTestMeasurements()
     {
-        await MeasurementApiClient.PostInsertTestMeasurements();
+        await MeasurementApiClient.PostInsertTestMeasurementsAsync();
         Snackbar.Add("Test-Messwerte wurden eingefügt!", Severity.Success);
     }
 }
