@@ -8,7 +8,7 @@ class Fan:
         GPIO.setup(self.relay_pin, GPIO.OUT)
 
     def turn_on(self):
-        GPIO.output(self.relay_pin, GPIO.HIGH)
+        GPIO.output(self.relay_pin, GPIO.LOW)
 
     def turn_off(self):
-        GPIO.output(self.relay_pin, GPIO.LOW)
+        GPIO.output(self.relay_pin, GPIO.HIGH)
