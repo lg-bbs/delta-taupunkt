@@ -8,4 +8,4 @@ pip install adafruit-blinka
 pip install adafruit-circuitpython-character-lcd
 
 echo
-read -p "Programmende - Enter zum SchlieÃen"
+read -p "Ende"
