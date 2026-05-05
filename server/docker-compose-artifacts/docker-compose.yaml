@@ -20,6 +20,7 @@ services:
       - "5432"
     networks:
       - "aspire"
+    restart: "always"
   apiservice:
     image: "${APISERVICE_IMAGE}"
     environment:
@@ -41,6 +42,7 @@ services:
       - "5001:${APISERVICE_PORT}"
     networks:
       - "aspire"
+    restart: "always"
   webfrontend:
     image: "${WEBFRONTEND_IMAGE}"
     environment:
@@ -60,6 +62,7 @@ services:
         condition: "service_started"
     networks:
       - "aspire"
+    restart: "always"
 networks:
   aspire:
     driver: "bridge"
