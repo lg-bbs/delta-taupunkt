@@ -1,10 +1,12 @@
 ﻿@page "/settings"
 @using MudBlazor
+@using TauLuftAspire.Model.Entity
 @using TauLuftAspire.Web.ApiClient
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject LogApiClient LogApiClient
 @inject MeasurementApiClient MeasurementApiClient
+@inject ConfigApiClient ConfigApiClient
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-8 px-6">
     <MudText Typo="Typo.h4" Class="mb-6 font-weight-bold">Systemkonfiguration</MudText>
@@ -83,7 +85,7 @@
                                                Color="Color.Primary" Disabled="@(Clipboard == null)" />
 
                                 <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Size="Size.Small"
-                                               OnClick="() => ResetDay(day)" Title="Zurücksetzen (Automatik)" Color="Color.Error" />
+                                               OnClick="() => ResetDay(day)" Title="Zurücksetzen" Color="Color.Error" />
                             </div>
                         </div>
                         <div class="d-flex w-100" style="height: 40px; border: 1px solid var(--mud-palette-lines-default); border-radius: 6px; overflow: hidden; background: #f5f5f5;">
@@ -137,23 +139,50 @@
 
 @code {
     // Regelung
-    private double DewPointDelta = 3.0;
-    private double Hysteresis = 0.5;
-    private double MinIndoorTemp = 10.0;
-    private double MinOutdoorTemp = -10.0;
-    private int MeasureInterval = 3;
+    private double DewPointDelta = 0;
+    private double Hysteresis = 0;
+    private double MinIndoorTemp = 0;
+    private double MinOutdoorTemp = 0;
+    private int MeasureInterval = 0;
 
     // Kalibrierung
-    private double InTempOffset = 0.0;
-    private double InHumOffset = 0.0;
-    private double OutTempOffset = 0.0;
-    private double OutHumOffset = 0.0;
+    private double InTempOffset = 0;
+    private double InHumOffset = 0;
+    private double OutTempOffset = 0;
+    private double OutHumOffset = 0;
 
     private Dictionary<DayOfWeek, int[]> WeeklySchedule = new();
     private int[]? Clipboard = null;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var config = await ConfigApiClient.GetConfigAsync();
+        DewPointDelta = config.TargetDelta;
+        Hysteresis = config.Hysrerese;
+        MinIndoorTemp = config.MinTempInside;
+        MinOutdoorTemp = config.MinTempOutside;
+        MeasureInterval = config.Interval;
+        InTempOffset = config.TempInsideOffset;
+        InHumOffset = config.HumInsideOffset;
+        OutTempOffset = config.TempOutsideOffset;
+        OutHumOffset = config.HumOutsideOffset;
+    }
+
     private async void Save()
     {
+        var newConfig = new Config
+        {
+            TargetDelta = DewPointDelta,
+            Hysrerese = Hysteresis,
+            MinTempInside = MinIndoorTemp,
+            MinTempOutside = MinOutdoorTemp,
+            Interval = MeasureInterval,
+            TempInsideOffset = InTempOffset,
+            HumInsideOffset = InHumOffset,
+            TempOutsideOffset = OutTempOffset,
+            HumOutsideOffset = OutHumOffset
+        };
+        await ConfigApiClient.PostConfigAsync(newConfig);
         Snackbar.Add("Einstellungen wurden erfolgreich gespeichert!", Severity.Success);
         await JSRuntime.InvokeVoidAsync("window.scrollTo", new { top = 0, behavior = "smooth" });
     }

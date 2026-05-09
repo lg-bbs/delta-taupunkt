@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using TauLuftAspire.ApiService.Database;
 using TauLuftAspire.ApiService.Endpoints;
 
@@ -14,7 +15,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TauLuftDbContext>();
-    db.Database.EnsureCreated();
+    await db.Database.MigrateAsync();
 }
 
 app.UseExceptionHandler();
@@ -27,5 +28,6 @@ if (app.Environment.IsDevelopment())
 app.MapDefaultEndpoints();
 app.MapLogEndpoints();
 app.MapMeasurementEndpoints();
+app.MapConfigEndpoints();
 
 app.Run();

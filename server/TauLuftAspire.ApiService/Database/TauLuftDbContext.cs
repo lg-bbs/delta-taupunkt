@@ -9,4 +9,5 @@ public class TauLuftDbContext : DbContext
 
     public DbSet<LogEntry> LogEntry => Set<LogEntry>();
     public DbSet<Measurement> Measurement => Set<Measurement>();
+    public DbSet<Config> Config => Set<Config>();
 }

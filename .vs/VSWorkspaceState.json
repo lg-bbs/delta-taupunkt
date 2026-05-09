@@ -11,6 +11,6 @@
     "\\server\\TauLuftAspire.ApiService\\Endpoints",
     "\\setup"
   ],
-  "SelectedNode": "\\server\\Model\\Enum\\LogSeverity.cs",
+  "SelectedNode": "\\server\\TauLuftAspire.ApiService\\Endpoints\\MeasurementEndpoints.cs",
   "PreviewInSolutionExplorer": false
 }
