@@ -1,18 +1,18 @@
 import math
 
-from config import HYSTERESE, MIN_TEMP_INSIDE, MIN_TEMP_OUTSIDE, TARGET_DELTA
 from core.model import Measurement
+from configobj import Config
 
-def calcFanRunning(m: Measurement, fanBefore: bool):
+def calcFanRunning(m: Measurement, fanBefore: bool, config: Config) -> bool:
     deltaTP = m.inside.dew - m.outside.dew
     run = fanBefore
-    if (deltaTP > TARGET_DELTA + HYSTERESE):
+    if (deltaTP > config.targetDelta + config.hysrerese):
         run = True
     
-    if (deltaTP < TARGET_DELTA):
+    if (deltaTP < config.targetDelta):
         run = False
     
-    if (m.inside.temp < MIN_TEMP_INSIDE or m.outside.temp < MIN_TEMP_OUTSIDE):
+    if (m.inside.temp < config.minTempInside or m.outside.temp < config.minTempOutside):
         run = False
     
     m.isFanRunning = run

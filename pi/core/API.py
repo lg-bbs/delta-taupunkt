@@ -3,6 +3,7 @@ import traceback
 from config import API_ENDPOINT
 from core.model import Measurement
 import requests
+from configobj import Config
 
 def postInsertMeasurement(m: Measurement):
     try:
@@ -22,7 +23,7 @@ def postInsertMeasurement(m: Measurement):
     except Exception as e:
         postErrorException(e, "API")
 
-def postFatalException(exception: str, source: str = "System"):
+def postFatalException(exception: Exception, source: str = "System"):
     stack_trace = traceback.format_exc()
     postFatal(str(exception), source, details=stack_trace)
 
@@ -30,7 +31,7 @@ def postFatal(message: str, source: str = "System", details: str = ""):
     print(f"Fatal: {message}, {source}, {details}")
     postLog(message, 6, source, details)
 
-def postErrorException(exception: str, source: str = "System"):
+def postErrorException(exception: Exception, source: str = "System"):
     stack_trace = traceback.format_exc()
     postError(str(exception), source, details=stack_trace)
 
@@ -68,3 +69,14 @@ def postLog(message: str, severity: int, source: str = "System", details: str = 
         print(response.status_code)
     except Exception as e:
         print(f"Ein unerwarteter Fehler beim Post-Log ist aufgetreten: {e}")
+
+def getConfig():
+    try:
+        url = f"{API_ENDPOINT}config"
+        response = requests.get(url)
+        response.raise_for_status()
+        configJson = response.json()
+        postInfo(f"Online-Config wurde geladen: {response.text}")
+        return Config.from_dict(configJson)
+    except Exception as e:
+        postErrorException(e, "Config")

@@ -1,3 +1,5 @@
+from configobj import Config
+
 from .SingleMeasurement import SingleMeasurement
 
 class Measurement:
@@ -14,3 +16,11 @@ class Measurement:
         
     def isValid(self) -> bool:
         return self.inside is not None
+    
+    def correctByConfig(self, config: Config):
+        if self.inside is not None:
+            self.inside.temp += config.tempInsideOffset
+            self.inside.hum += config.humInsideOffset
+        if self.outside is not None:
+            self.outside.temp += config.tempOutsideOffset
+            self.outside.hum += config.humOutsideOffset
