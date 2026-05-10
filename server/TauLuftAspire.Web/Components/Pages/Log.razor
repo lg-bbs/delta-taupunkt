@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
     @* Header Bereich *@
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="width-100">
-        <MudText Typo="Typo.h4">System-Protokoll</MudText>
+        <MudText Typo="Typo.h4">Meldungen</MudText>
         <div class="d-flex">
             <MudSelect T="int" Label="Angezeigter Schweregrad" Variant="Variant.Outlined" Value="@minLevelPriority" ValueChanged="OnLevelChanged" Class="mr-3" Style="max-width: 250px; min-width: 250px" Dense="true">
                 <MudSelectItem Value="1">Debug</MudSelectItem>
@@ -141,7 +141,7 @@
         Logs = await LogApiClient.GetAllLogsAsync(start, end, minLevelPriority);
         await LogApiClient.PostAllReadAsync();
 
-        MainLayout.MarkNoUnreadLogs();
+        await MainLayout.MarkNoUnreadLogsAsync();
 
         IsLoading = false;
     }

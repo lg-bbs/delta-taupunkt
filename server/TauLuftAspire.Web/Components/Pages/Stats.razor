@@ -17,7 +17,7 @@
             <MudCard Elevation="2">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Taupunkt Vergleich (°C)</MudText>
+                        <MudText Typo="Typo.h6">Taupunkt Vergleich (K)</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
@@ -25,7 +25,7 @@
                               ChartSeries="@_tpSeries"
                               XAxisLabels="@_xAxisLabels"
                               Width="100%" Height="300px"
-                              ChartOptions="@_tpOptions" />
+                              ChartOptions="@_options" />
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -34,7 +34,7 @@
             <MudCard Elevation="2">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Temp (°C) & Feuchte (%)</MudText>
+                        <MudText Typo="Typo.h6">Temperatur (°C) & Luftfeuchtigkeit (%)</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
@@ -42,7 +42,7 @@
                               ChartSeries="@_thSeries"
                               XAxisLabels="@_xAxisLabels"
                               Width="100%" Height="300px"
-                              ChartOptions="@_thOptions" />
+                              ChartOptions="@_options" />
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -52,12 +52,11 @@
 @code {
     private List<Measurement> _measurements = new();
 
-    private DateRange _dateRange = new DateRange(DateTime.Now.Date.AddDays(-2), DateTime.Now.Date);
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.Date);
 
     private List<ChartSeries> _tpSeries = new();
     private List<ChartSeries> _thSeries = new();
     private string[] _xAxisLabels = Array.Empty<string>();
-    private ChartOptions _options = new() { InterpolationOption = InterpolationOption.NaturalSpline };
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,14 +69,14 @@
         DateTime start = new DateTime(DateOnly.FromDateTime(_dateRange.Start.Value), new TimeOnly(0, 0, 0));
         DateTime end = new DateTime(DateOnly.FromDateTime(_dateRange.End.Value), new TimeOnly(23, 59, 59));
         _measurements = await MeasurementApiClient.GetMeasurementsAsync(start, end);
+        _measurements = _measurements.OrderBy(m => m.LocalTimestamp).DistinctBy(m => m.LocalTimestamp).ToList();
         PrepareCharts();
     }
 
     private string[] _tpPalette = { "#FF5252", "#448AFF" };
     private string[] _thPalette = { "#FF5252", "#5294ff", "#802a2a", "#27477a" };
 
-    private ChartOptions _tpOptions = new() { InterpolationOption = InterpolationOption.NaturalSpline };
-    private ChartOptions _thOptions = new() { InterpolationOption = InterpolationOption.NaturalSpline };
+    private ChartOptions _options = new() { InterpolationOption = InterpolationOption.Straight };
 
     private void PrepareCharts()
     {
@@ -99,8 +98,8 @@
             }
         }
 
-        _tpOptions.ChartPalette = _tpPalette;
-        _thOptions.ChartPalette = _thPalette;
+        _options.ChartPalette = _tpPalette;
+        _options.ChartPalette = _thPalette;
 
         _tpSeries = new List<ChartSeries>
         {

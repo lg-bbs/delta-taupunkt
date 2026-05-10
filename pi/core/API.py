@@ -5,7 +5,23 @@ from core.model import Measurement
 import requests
 from configobj import Config
 
+API_AVAILABLE = True
+
+def checkApiAvailability():
+    global API_AVAILABLE
+    try:
+        # Kurzer Check (Timeout von 1 Sekunde reicht lokal völlig aus)
+        requests.head(API_ENDPOINT, timeout=1)
+        API_AVAILABLE = True
+        print("API ist erreichbar")
+    except requests.exceptions.RequestException:
+        API_AVAILABLE = False
+        print("API ist nicht erreichbar")
+
 def postInsertMeasurement(m: Measurement):
+    if not API_AVAILABLE:
+        print("API ist nicht verfügbar, überspringe das Posten der Messung")
+        return
     try:
         url = f"{API_ENDPOINT}measurements"
         params = {
@@ -56,6 +72,9 @@ def postDebug(message: str, source: str = "System", details: str = ""):
     postLog(message, 1, source, details)
 
 def postLog(message: str, severity: int, source: str = "System", details: str = ""):
+    if not API_AVAILABLE:
+        print("API ist nicht verfügbar, überspringe das Posten des Logs")
+        return
     try:
         url = f"{API_ENDPOINT}logs"
         params = {
@@ -71,6 +90,9 @@ def postLog(message: str, severity: int, source: str = "System", details: str = 
         print(f"Ein unerwarteter Fehler beim Post-Log ist aufgetreten: {e}")
 
 def getConfig():
+    if not API_AVAILABLE:
+        print("API ist nicht verfügbar, überspringe das Get der Config")
+        return None
     try:
         url = f"{API_ENDPOINT}config"
         response = requests.get(url)
@@ -80,3 +102,4 @@ def getConfig():
         return Config.from_dict(configJson)
     except Exception as e:
         postErrorException(e, "Config")
+        return None

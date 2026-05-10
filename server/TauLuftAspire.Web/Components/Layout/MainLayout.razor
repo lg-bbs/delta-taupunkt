@@ -3,6 +3,7 @@
 @using TauLuftAspire.Web.ApiClient
 @inherits LayoutComponentBase
 @inject LogApiClient LogApiClient
+@inject IJSRuntime JSRuntime
 
 <MudThemeProvider Theme="_myCustomTheme" @bind-IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
@@ -54,9 +55,10 @@
         }
     }
 
-    public void MarkNoUnreadLogs()
+    public async Task MarkNoUnreadLogsAsync()
     {
-        Logs = new();
+        Logs = [];
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -69,7 +71,8 @@
 
     void OpenGithub()
     {
-        
+        var url = "https://github.com/lg-bbs/delta-taupunkt";
+        JSRuntime.InvokeVoidAsync("open", url, "_blank");
     }
 
     void DarkModeToggle()

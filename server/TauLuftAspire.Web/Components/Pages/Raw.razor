@@ -42,11 +42,11 @@
                     <MudTd>@context.LocalTimestamp.ToString("HH:mm 'Uhr'")</MudTd>
                     <MudTd Class="bg-indoor">@context.Inside.Temperature°C</MudTd>
                     <MudTd Class="bg-indoor">@context.Inside.Humidity%</MudTd>
-                    <MudTd Class="bg-indoor border-right"><b>@context.Inside.DewPoint°C</b></MudTd>
+                    <MudTd Class="bg-indoor border-right"><b>@context.Inside.DewPoint.ToString("N1")°C</b></MudTd>
                     <MudTd Class="bg-outdoor">@context.Outside.Temperature°C</MudTd>
                     <MudTd Class="bg-outdoor">@context.Outside.Humidity%</MudTd>
-                    <MudTd Class="bg-outdoor"><b>@context.Outside.DewPoint°C</b></MudTd>
-                    <MudTd>@((context.Inside.DewPoint - context.Outside.DewPoint).ToString("N1")) K</MudTd>
+                    <MudTd Class="bg-outdoor"><b>@context.Outside.DewPoint.ToString("N1")°C</b></MudTd>
+                    <MudTd>@((context.DeltaTp).ToString("N1")) K</MudTd>
                     <MudTd><MudIcon Icon="@(context.IsFanRunning ? Icons.Material.Filled.Air : Icons.Material.Filled.Block)" Color="@(context.IsFanRunning ? Color.Success : Color.Error)" /></MudTd>
                 </RowTemplate>
                 <PagerContent>
@@ -105,5 +105,6 @@
         DateTime start = new DateTime(DateOnly.FromDateTime(_dateRange.Start.Value), new TimeOnly(0, 0, 0));
         DateTime end = new DateTime(DateOnly.FromDateTime(_dateRange.End.Value), new TimeOnly(23, 59, 59));
         _measurements = await MeasurementApiClient.GetMeasurementsAsync(start, end);
+        _measurements = _measurements.OrderByDescending(m => m.LocalTimestamp).ToList();
     }
 }

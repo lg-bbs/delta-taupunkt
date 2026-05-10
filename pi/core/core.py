@@ -2,24 +2,32 @@ import time
 
 from core.API import getConfig, postErrorException, postInfo, postInsertMeasurement, postWarn
 from core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
-#from core.sensor.Fan import Fan
 from configobj import Config
 from core.model.Measurement import Measurement
 from core.model.SingleMeasurement import SingleMeasurement
-#from .sensor.DHTHelper import DHTHelper
+from config import TEST_MODE
 from .db.db import MeasureDB
-#from .sensor.LCD import LCD
+
+if TEST_MODE:
+    print("TEST MODE IST AKTIVIERT - Es werden keine Messungen gepostet und der Lüfter wird nicht angesteuert, sondern nur die Logik durchlaufen")
+else:
+    from core.sensor.Fan import Fan
+    from .sensor.DHTHelper import DHTHelper
+    from .sensor.LCD import LCD
 
 def core():
-    #dhtHelper = DHTHelper()
-    #lcd = LCD()
     db = MeasureDB()
-    #fan = Fan()
     fanRunning = False
     config = Config()
+    if not TEST_MODE:
+        dhtHelper = DHTHelper()
+        lcd = LCD()
+        fan = Fan()
 
     try:
-        config = getConfig()
+        remoteConfig = getConfig()
+        if remoteConfig:
+            config = remoteConfig
     except Exception as e:
         postErrorException(e, "Config")
 
@@ -33,24 +41,27 @@ def core():
             print("loop")
 
             try:
-                config = getConfig()
-                interval = config.interval
+                remoteConfig = getConfig()
+                if remoteConfig:
+                    config = remoteConfig
+                    interval = config.interval
             except Exception as e:
                 postErrorException(e, "Config")
 
-            #m = dhtHelper.measure_all()
-            inside = SingleMeasurement(temp=20.0, hum=50.0)
-            outside = SingleMeasurement(temp=15.0, hum=60.0)
-            m = Measurement(
-                time.time_ns() // 1_000_000,
-                inside = inside,
-                outside = outside
-            )
+            if not TEST_MODE:
+                m = dhtHelper.measure_all()
+            else:
+                inside = SingleMeasurement(temp=20.0, hum=50.0)
+                outside = SingleMeasurement(temp=15.0, hum=60.0)
+                m = Measurement(
+                    time.time_ns() // 1_000_000,
+                    inside = inside,
+                    outside = outside
+                )           
+
             print("after measure")        
 
             if m:
-                print(m.txt())
-
                 m.correctByConfig(config)
                 print("after correct")
                 print(m.txt())
@@ -60,27 +71,37 @@ def core():
                     print("after adding dew")
 
                     fanRunning = calcFanRunning(m, fanBefore=fanRunning, config=config)
+
+                    print("")
+                    print("++++++++++++++++++++++++++++++++")
                     print(f"Fan running: {fanRunning}")
-                    print("after fan calc")
+                    print(m.txt())
+                    print("++++++++++++++++++++++++++++++++")
+                    print("")
 
-                #    if fanRunning:
-                #        fan.turn_on()
-                #    else:
-                #        fan.turn_off()
-                    print("after fan set")
-
-                #    lcd.showData(m)
-                    print("after show")
+                    if not TEST_MODE:
+                        if fanRunning:
+                            fan.turn_on()
+                        else:
+                            fan.turn_off()
+                        print("after fan set")
+                        lcd.showData(m)
+                        print("after show")
 
                     db.insert_measurement(m)
                     print("after save")
 
                     postInsertMeasurement(m)
                     print("after post")
+
+                    print("")
+                    print("")
+                    print("------------------------------")
+                    print("")
                 except Exception as e:
                     postErrorException(e, "Core-Measurement-Control")
             else:
-                postWarn("Messung ungültig")
+                postWarn("Messung ungültig", "DHT")
 
             
         except Exception as e:

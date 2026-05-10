@@ -6,11 +6,12 @@
     "\\pi\\core\\calc",
     "\\server",
     "\\server\\Model",
+    "\\server\\Model\\Entity",
     "\\server\\Model\\Enum",
     "\\server\\TauLuftAspire.ApiService",
     "\\server\\TauLuftAspire.ApiService\\Endpoints",
     "\\setup"
   ],
-  "SelectedNode": "\\server\\TauLuftAspire.ApiService\\Endpoints\\MeasurementEndpoints.cs",
+  "SelectedNode": "\\server\\Model\\Entity\\Config.cs",
   "PreviewInSolutionExplorer": false
 }

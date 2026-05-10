@@ -1,57 +1,271 @@
 ﻿@page "/"
 @using MudBlazor
+@using TauLuftAspire.Model.Entity
+@using TauLuftAspire.Model.Enum
+@using TauLuftAspire.Web.ApiClient
 @using TauLuftAspire.Web.Components.Default
+@inject MeasurementApiClient MeasurementApiClient
+@inject LogApiClient LogApiClient
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 px-4">
     <MudText Typo="Typo.h4" Class="mb-6">Taupunkt-Lüftung Dashboard</MudText>
 
     <MudGrid>
-        <StatusCard Title="Innenklima" Text="21.5 °C / 65% rF" Caption="Taupunkt: 14.2 °C" />
-        <StatusCard Title="Außenklima" Text="12.0 °C / 80% rF" Caption="Taupunkt: 8.5 °C" Theme="Color.Info" />
-        <StatusCard Title="Empfehlung" Text="Lüften möglich" Caption="Delta TP: 5.7 °C" Theme="Color.Success" />
-        <StatusCard Title="Lüfter-Status" Text="AKTIV" Caption="Seit 45 Minuten" Theme="Color.Warning" />
+        <StatusCard Title="Taupunkt innen" Text="@((Measurement?.Inside?.DewPoint.ToString("N1") ?? "---") + " °C")" />
+        <StatusCard Title="Taupunkt außen" Text="@((Measurement?.Outside?.DewPoint.ToString("N1") ?? "---") + " °C")" />
+        <StatusCard Title="Delta-TP" Text="@((Measurement?.DeltaTp.ToString("N1") ?? "") + " K")" />
+        <StatusCard Title="Letzte Messung" Text="@(Measurement?.LocalTimestamp.ToString("dd.MM.yy, HH:mm:ss 'Uhr'") ?? "---")" />
 
-        @* --- DIAGRAMME IN DER MITTE --- *@
+        <MudItem xs="12" md="7" lg="8">
+            <MudPaper Elevation="4" Class="pa-4 d-flex flex-column align-center justify-center relative"
+                      Style="height: 435px; background-color: var(--mud-palette-surface-dark);">
 
-        <MudItem xs="12" md="8">
-            <MudPaper Class="pa-4" Elevation="4">
-                <MudText Typo="Typo.h6" Class="mb-4">Taupunkt-Verlauf (24h)</MudText>
-                <MudChart ChartType="ChartType.Line" 
-                          ChartOptions="@Options"
-                          ChartSeries="@Series" 
-                          XAxisLabels="@XAxisLabels" 
-                          Width="100%" Height="300px" />
+                @* 1. Die Verbindungs-Linien (SVG) *@
+                <svg width="100%" height="100%" style="position: absolute; top:0; left:0; z-index: 0;">
+                    <line x1="50%" y1="50%" x2="20%" y2="20%" stroke="@GetColor(SensorInStatus)" stroke-width="4" />
+
+                    <line x1="50%" y1="50%" x2="80%" y2="20%" stroke="@GetColor(SensorOutStatus)" stroke-width="4" />
+
+                    <line x1="50%" y1="50%" x2="20%" y2="80%" stroke="@GetColor(MotorStatus)" stroke-width="@(MotorActive ? "6" : "4")"
+                          stroke-dasharray="@(MotorActive ? "5,5" : "0")" class="@(MotorActive ? "anim-flow" : "")" />
+
+                    <line x1="50%" y1="50%" x2="80%" y2="80%" stroke="@GetColor(LcdStatus)" stroke-width="4" />
+                </svg>
+
+                @* 2. Die Icons (Absolut positioniert über den Linienenden) *@
+
+                @* ZENTRUM: Raspberry Pi *@
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Hub" Size="Size.Large" Color="@GetMudColor(SystemStatus)" />
+                        <MudText Typo="Typo.caption" Class="mt-1">Controller</MudText>
+                    </MudPaper>
+                </div>
+
+                @* OBEN LINKS: Sensor Innen *@
+                <div style="position: absolute; top: 20%; left: 20%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Home" Color="@GetMudColor(SensorInStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Innen</MudText>
+                        <MudText Typo="Typo.body2"><b>@((Measurement?.Inside.Temperature.ToString("N1") ?? "-") + " °C")</b></MudText>
+                        <MudText Typo="Typo.body2"><b>@((Measurement?.Inside.Humidity.ToString("N1") ?? "-") + " %")</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* OBEN RECHTS: Sensor Außen *@
+                <div style="position: absolute; top: 20%; left: 80%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Park" Color="@GetMudColor(SensorOutStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Außen</MudText>
+                        <MudText Typo="Typo.body2"><b>@((Measurement?.Outside.Temperature.ToString("N1") ?? "-") + " °C")</b></MudText>
+                        <MudText Typo="Typo.body2"><b>@((Measurement?.Outside.Humidity.ToString("N1") ?? "-") + " %")</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* UNTEN LINKS: Motor *@
+                <div style="position: absolute; top: 80%; left: 20%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.Cyclone" Color="@GetMudColor(MotorStatus)" Size="Size.Large" Class="@(MotorActive ? "spin-animation" : "")" />
+                        <MudText Typo="Typo.caption">Lüfter</MudText>
+                        <MudText Typo="Typo.body2"><b>@(MotorActive ? "AN" : "AUS")</b></MudText>
+                    </MudPaper>
+                </div>
+
+                @* UNTEN RECHTS: LCD *@
+                <div style="position: absolute; top: 80%; left: 80%; transform: translate(-50%, -50%); z-index: 1;" class="d-flex flex-column align-center">
+                    <MudPaper Class="d-flex flex-column align-center p-2" Style="width: 100px">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartScreen" Color="@GetMudColor(LcdStatus)" Size="Size.Large" />
+                        <MudText Typo="Typo.caption">Display</MudText>
+                    </MudPaper>
+                </div>
+
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" md="4">
-            <MudPaper Class="pa-4" Elevation="4">
-                <MudText Typo="Typo.h6" Class="mb-4">Aktuelle Feuchte</MudText>
-                <div class="d-flex justify-center">
-                    <MudChart ChartType="ChartType.Donut" 
-                              InputData="@DonutData" 
-                              InputLabels="@DonutLabels" 
-                              Width="200px" Height="200px" />
+        <MudItem xs="12" md="5" lg="4">
+            <MudPaper Elevation="4" Class="pa-0 d-flex flex-column" Style="height: 435px;">
+
+                @* 1. Die Liste (nimmt den verfügbaren Platz ein und scrollt) *@
+                <div style="flex-grow: 1; overflow-y: auto;" class="pt-2">
+                    <MudList T="string" Dense="true">
+                        @if (CurrentLogs.Any())
+                        {
+                            @foreach (var msg in CurrentLogs)
+                            {
+                                <MudListItem Icon="@GetImage(msg.Severity)" IconColor="@GetColor(msg.Severity)">
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.subtitle2">@msg.Message</MudText>
+                                        <MudText Typo="Typo.caption">@msg.LocalTimestamp.ToString("HH:mm:ss") - @msg.Details</MudText>
+                                    </div>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center justify-center mt-12">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                <MudText Class="mt-2" Color="Color.Success">Keine Störungen</MudText>
+                            </div>
+                        }
+                    </MudList>
                 </div>
+
+                @* 2. Der Button-Footer (immer unten sichtbar) *@
+                <div class="pa-2 d-flex justify-center border-t">
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               EndIcon="@Icons.Material.Filled.ArrowForward"
+                               Href="/logs"
+                               FullWidth="true"
+                               Class="py-2">
+                        Alle Meldungen anzeigen
+                    </MudButton>
+                </div>
+
             </MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>
 
+<style>
+    .spin-animation {
+        animation: spin 2s linear infinite;
+    }
+
+    @@keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .anim-flow {
+        stroke-dashoffset: 100;
+        animation: dash 2s linear infinite;
+    }
+
+    @@keyframes dash {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+</style>
+
 @code {
-    // Beispiel-Daten für die Diagramme
-    public List<ChartSeries> Series = new List<ChartSeries>()
+    public Measurement? Measurement { get; set; }
+    public List<LogEntry> CurrentLogs { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
     {
-        new ChartSeries() { Name = "Taupunkt Innen", Data = new double[] { 14, 14.2, 17.5, 14.1, 0, 13.5 } },
-        new ChartSeries() { Name = "Taupunkt Außen", Data = new double[] { 8, 8.5, 10, 3, 4, 10 } },
-    };
-    public string[] XAxisLabels = { "12:00", "14:00", "16:00", "18:00", "20:00", "22:00" };
+        await LadeDatenAsync();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        _ = StartePollingAsync();
+    }
 
-    public double[] DonutData = { 65, 35 };
-    public string[] DonutLabels = { "Feuchte (64%)" };
+    enum StatusType { Inactive, Ok, Warning, Error, Active }
 
-    public ChartOptions Options = new ChartOptions
+    private StatusType SystemStatus => LogsToStatus(CurrentLogs.Where(l => l.IsSystem).ToList());
+    private StatusType SensorInStatus => LogsToStatus(CurrentLogs.Where(l => l.IsDht || l.IsInsideDht).ToList());
+    private StatusType SensorOutStatus => LogsToStatus(CurrentLogs.Where(l => l.IsDht || l.IsOutsideDht).ToList());
+    private StatusType MotorStatus => LogsToStatus(CurrentLogs.Where(l => l.IsFan).ToList(), Measurement?.IsFanRunning ?? false ? StatusType.Active : StatusType.Inactive);
+    private StatusType LcdStatus => LogsToStatus(CurrentLogs.Where(l => l.IsLcd).ToList());
+
+    private bool MotorActive => MotorStatus == StatusType.Active;
+
+    public string GetImage(LogSeverity s)
+    {
+        switch (s)
         {
-            InterpolationOption = InterpolationOption.NaturalSpline
-        };
+            case LogSeverity.Error: 
+            case LogSeverity.Critical: 
+                return Icons.Material.Filled.Error;
+            case LogSeverity.Warning: 
+                return Icons.Material.Filled.Warning;
+        }
+        return Icons.Material.Filled.Info;
+    }
+
+    public Color GetColor(LogSeverity s)
+    {
+        switch (s)
+        {
+            case LogSeverity.Error: 
+            case LogSeverity.Critical: 
+                return Color.Error;
+            case LogSeverity.Warning: 
+                return Color.Warning;
+        }
+        return Color.Info;
+    }
+
+    private StatusType LogsToStatus(List<LogEntry> entries, StatusType okStatus = StatusType.Ok)
+    {
+        if (entries.Count == 0)
+        {
+            return okStatus;
+        }
+
+        var severity = entries.Max(l => l.Severity);
+        switch(severity)
+        {
+            case Model.Enum.LogSeverity.Warning:
+                return StatusType.Warning;
+            case Model.Enum.LogSeverity.Error:
+            case Model.Enum.LogSeverity.Critical:
+                return StatusType.Error;
+        }
+
+        return okStatus;
+    }
+
+    private string GetColor(StatusType status) => status switch
+    {
+        StatusType.Ok => "#00c853",      // Grün
+        StatusType.Warning => "#ff9800", // Gelb/Orange
+        StatusType.Error => "#f44336",   // Rot
+        StatusType.Active => "#2196f3",  // Blau
+        _ => "#9e9e9e"               // Grau (Unknown)
+    };
+
+    private Color GetMudColor(StatusType status) => status switch
+    {
+        StatusType.Ok => Color.Success,
+        StatusType.Warning => Color.Warning,
+        StatusType.Error => Color.Error,
+        StatusType.Active => Color.Info,
+        _ => Color.Default
+    };
+
+    private PeriodicTimer? _timer;
+    private DateTime _lastUpdate;
+
+    private async Task StartePollingAsync()
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync())
+            {
+                await LadeDatenAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task LadeDatenAsync()
+    {
+        Measurement = await MeasurementApiClient.GetCurrentMeasurement();
+        if (Measurement != null)
+        {
+            CurrentLogs = await LogApiClient.GetAllLogsAsync(Measurement.Timestamp.AddSeconds(-10), DateTime.UtcNow, (int)LogSeverity.Warning);
+        }
+        _lastUpdate = DateTime.Now;
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
 }

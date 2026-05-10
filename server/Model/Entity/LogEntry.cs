@@ -14,6 +14,13 @@ public class LogEntry
 
     public DateTime LocalTimestamp => Timestamp.ToLocalTime();
 
+    public bool IsSystem => !IsDht && !IsLcd && !IsFan && !IsInsideDht && !IsOutsideDht;
+    public bool IsLcd => Source == "LCD";
+    public bool IsFan => Source == "Fan";
+    public bool IsInsideDht => Source == "InDHT";
+    public bool IsOutsideDht => Source == "OutDHT";
+    public bool IsDht => Source == "DHT";
+
     public LogEntry(string message, string details, string source, LogSeverity severity, DateTime timestamp, bool read = true)
     {
         Severity = severity;

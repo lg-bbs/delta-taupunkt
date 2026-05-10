@@ -9,4 +9,6 @@ public class Measurement
     public bool IsFanRunning { get; set; }
 
     public DateTime LocalTimestamp => Timestamp.ToLocalTime();
+
+    public double DeltaTp => Inside.DewPoint - Outside.DewPoint;
 }
