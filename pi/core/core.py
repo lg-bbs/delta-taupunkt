@@ -57,7 +57,7 @@ def core():
                     time.time_ns() // 1_000_000,
                     inside = inside,
                     outside = outside
-                )           
+                )
 
             print("after measure")        
 

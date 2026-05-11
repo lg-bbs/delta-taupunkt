@@ -13,11 +13,18 @@ public static class MeasurementEndpoints
         group.MapGet("/", GetAllMeasurements);
         group.MapPost("/", InsertMeasurement);
         group.MapPost("/test", InsertTestMeasurements);
+        group.MapDelete("/", DeleteAll);
     }
 
     private static async Task<Measurement?> GetCurrentMeasurement(TauLuftDbContext db)
     {
         return await db.Measurement.FirstOrDefaultAsync(m => db.Measurement.Where(m2 => m2.Timestamp <= DateTime.UtcNow).Max(m2 => m2.Timestamp) == m.Timestamp);
+    }
+
+    private static async Task<IResult> DeleteAll(TauLuftDbContext db)
+    {
+        await db.Measurement.ExecuteDeleteAsync();
+        return Results.Ok();
     }
 
     private static async Task<List<Measurement>> GetAllMeasurements(TauLuftDbContext db, DateTime from, DateTime to, int limit = 10000)

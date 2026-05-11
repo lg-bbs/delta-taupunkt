@@ -18,4 +18,9 @@ public class MeasurementApiClient(HttpClient httpClient)
     {
         await httpClient.PostAsync($"/api/measurements/test", null);
     }
+
+    public async Task DeleteAll()
+    {
+        await httpClient.DeleteAsync($"/api/measurements");
+    }
 }

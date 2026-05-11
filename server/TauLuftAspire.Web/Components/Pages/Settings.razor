@@ -128,6 +128,12 @@
                 <MudItem>
                     <MudButton Variant="Variant.Outlined" OnClick="DebugInsertTestMeasurements">Test-Messwerte einfügen</MudButton>
                 </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DebugDeleteAllLogs">Alle Logs löschen</MudButton>
+                </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DebugDeleteAllMeasurements">Alle Messwerte löschen</MudButton>
+                </MudItem>
             </MudGrid>
         </MudTabPanel>
     </MudTabs>
@@ -251,5 +257,17 @@
     {
         await MeasurementApiClient.PostInsertTestMeasurementsAsync();
         Snackbar.Add("Test-Messwerte wurden eingefügt!", Severity.Success);
+    }
+
+    private async Task DebugDeleteAllMeasurements()
+    {
+        await MeasurementApiClient.DeleteAll();
+        Snackbar.Add("Alle Messwerte wurden gelöscht!", Severity.Success);
+    }
+
+    private async Task DebugDeleteAllLogs()
+    {
+        await LogApiClient.DeleteAll();
+        Snackbar.Add("Alle Logs wurden gelöscht!", Severity.Success);
     }
 }

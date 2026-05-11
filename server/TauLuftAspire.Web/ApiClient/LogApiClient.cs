@@ -24,4 +24,9 @@ public class LogApiClient(HttpClient httpClient)
     {
         await httpClient.PostAsync("/api/logs/test", null);
     }
+
+    public async Task DeleteAll()
+    {
+        await httpClient.DeleteAsync($"/api/logs");
+    }
 }

@@ -1,0 +1,3 @@
+crontab -e
+
+@reboot screen -dmS autostart_session bash /home/...

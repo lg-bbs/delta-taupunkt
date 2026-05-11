@@ -15,6 +15,13 @@ public static class LogEndpoints
         group.MapPost("/", InsertLog);
         group.MapPost("/test", InsertTestLogs);
         group.MapPost("/read", LogsRead);
+        group.MapDelete("/", DeleteAll);
+    }
+
+    private static async Task<IResult> DeleteAll(TauLuftDbContext db)
+    {
+        await db.LogEntry.ExecuteDeleteAsync();
+        return Results.Ok();
     }
 
     private static async Task<List<LogEntry>> GetAllLogs(TauLuftDbContext db, DateTime from, DateTime to, int minSeverity = (int)LogSeverity.Info)
