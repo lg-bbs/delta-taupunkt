@@ -12,4 +12,4 @@ HUM_INSIDE_OFFSET = 0
 TEMP_OUTSIDE_OFFSET = 0
 HUM_OUTSIDE_OFFSET = 0
 
-TEST_MODE = True # Wenn True, werden keine Messungen gepostet und der Lüfter wird nicht angesteuert, sondern nur die Logik durchlaufen
+TEST_MODE = False # Wenn True, werden keine Messungen gepostet und der Lüfter wird nicht angesteuert, sondern nur die Logik durchlaufen
