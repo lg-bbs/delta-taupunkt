@@ -1,6 +1,6 @@
 import time
 
-from core.API import getConfig, postErrorException, postInfo, postInsertMeasurement, postWarn
+from core.API import getConfig, postErrorException, postInfo, postInsertMeasurement, postWarn, checkApiAvailability
 from core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
 from configobj import Config
 from core.model.Measurement import Measurement
@@ -111,6 +111,11 @@ def core():
                     postErrorException(e, "Core-Measurement-Control")
             else:
                 postWarn("Messung ungültig", "DHT")
+                
+            try:
+                checkApiAvailability()
+            except Exception as e:
+                print("API Status konnte nicht ermittelt werden")
 
             
         except Exception as e:
