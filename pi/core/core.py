@@ -62,6 +62,15 @@ def core():
             print("after measure")        
 
             if m:
+                
+                if not m.inside:
+                    postWarn("Messung innen ungültig", "InDHT", "Timeout bei der Messung des Innensensors.")
+                    continue
+                
+                if not m.outside:
+                    postWarn("Messung außen ungültig", "OutDHT", "Timeout bei der Messung des Außensensors.")
+                    continue
+                
                 m.correctByConfig(config)
                 print("after correct")
                 print(m.txt())
