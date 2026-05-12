@@ -12,7 +12,7 @@ class Measurement:
     def txt(self) -> str:
         if not self.isValid():
             return f"{self.time}: Keine Daten"
-        return f"Fan  I: {self.inside.txt()}\n{self.isFanRunning} A: {self.outside.txt()}"
+        return f"I: {self.inside.txt()}\nA: {self.outside.txt()}"
         
     def isValid(self) -> bool:
         return self.inside is not None
