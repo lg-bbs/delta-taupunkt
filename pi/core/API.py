@@ -98,7 +98,7 @@ def getConfig():
         response = requests.get(url)
         response.raise_for_status()
         configJson = response.json()
-        postInfo(f"Online-Config wurde geladen: {response.text}")
+        postDebug(f"Online-Config wurde geladen: {response.text}")
         return Config.from_dict(configJson)
     except Exception as e:
         postErrorException(e, "Config")
