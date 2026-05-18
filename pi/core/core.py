@@ -1,6 +1,6 @@
 import time
 
-from core.API import getConfig, postErrorException, postInfo, postInsertMeasurement, postWarn
+from core.API import getConfig, postErrorException, postInfo, postInsertMeasurement, postWarn, checkApiAvailability
 from core.calc.BasicCalc import addDewToMeasurement, calcFanRunning
 from configobj import Config
 from core.model.Measurement import Measurement
@@ -62,6 +62,15 @@ def core():
             print("after measure")        
 
             if m:
+                
+                if not m.inside:
+                    postWarn("Messung innen ungültig", "InDHT", "Timeout bei der Messung des Innensensors.")
+                    continue
+                
+                if not m.outside:
+                    postWarn("Messung außen ungültig", "OutDHT", "Timeout bei der Messung des Außensensors.")
+                    continue
+                
                 m.correctByConfig(config)
                 print("after correct")
                 print(m.txt())
@@ -102,6 +111,11 @@ def core():
                     postErrorException(e, "Core-Measurement-Control")
             else:
                 postWarn("Messung ungültig", "DHT")
+                
+            try:
+                checkApiAvailability()
+            except Exception as e:
+                print("API Status konnte nicht ermittelt werden")
 
             
         except Exception as e:

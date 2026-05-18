@@ -5,4 +5,4 @@ class SingleMeasurement:
         self.dew = dew
 
     def txt(self) -> str:
-        return f"{self.temp}°C, {self.hum}% >> {self.dew}°C"
+        return f"{self.temp}°C, {self.hum}%"

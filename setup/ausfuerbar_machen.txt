@@ -1,1 +1,16 @@
 chmod +x "Dateiname"
+
+[Unit]
+Description=Tauluft Skript
+After=network.target
+
+[Service]
+ExecStart=/bin/bash startup.sh
+WorkingDirectory=/home/luwi/TauLuft/pi
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=luwi
+
+[Install]
+WantedBy=multi-user.target
